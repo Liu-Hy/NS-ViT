@@ -86,11 +86,14 @@ class ImageNetDG(BaseDataset):
         return self.reader.n
 
     def __getitem__(self, indices):
-        print(type(indices))
         imgs_bytes = self.reader.read(indices)
         samples = []
         for i, bytes_ in enumerate(imgs_bytes):
-            img = pickle.loads(bytes_).convert("RGB")
+            datum = pickle.loads(bytes_)
+            if isinstance(datum, tuple):
+                datum = datum[0]
+                print("wrong type tuple")
+            img = datum.convert("RGB")
             label = self.meta["targets"][indices[i]]
             samples.append((img, int(label)))
 

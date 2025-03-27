@@ -149,7 +149,7 @@ def main(gpu, args):
     img_ratio = 0.1 #0.02
     train_ratio = 1. #0.1
     val_ratio = 1. #0.05
-    save_path = Path("./output/hfai")
+    save_path = Path("./output/hal")
     data_path = Path("../data") #Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
 
