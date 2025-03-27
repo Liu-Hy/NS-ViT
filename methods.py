@@ -90,6 +90,7 @@ def encoder_level_epsilon_noise(model, loader, rounds, nlr, lim, eps, device):
     assert isinstance(lim, (float, int))
     delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).to(device)
     delta_x.requires_grad = True
+    print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
     optimizer = AdamW([delta_x], lr=nlr)
     scheduler = CosineAnnealingLR(optimizer, len(loader) * rounds)
@@ -112,10 +113,16 @@ def encoder_level_epsilon_noise(model, loader, rounds, nlr, lim, eps, device):
             x = x + delta_x
 
             preds = model.head(encoder_forward(model, x))
-            error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
-            if error_mult < eps:
+
+            p_og = torch.softmax(og_preds, dim=-1)
+            p_alt = torch.softmax(preds, dim=-1)
+            mse_probs = (((p_og - p_alt) ** 2).sum(dim=-1)).mean()
+            if mse_probs < eps:
                 print(f"Image finished training at epoch {i} step {st}")
                 return delta_x
+
+            error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
+
             # error_mult = ((preds - og_preds) ** 2).sum(dim=-1).mean()
             # hinge = torch.max(torch.stack([error_mult - eps, torch.tensor(0)]))
             error_mult.backward()

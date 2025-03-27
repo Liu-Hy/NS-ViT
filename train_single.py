@@ -84,7 +84,7 @@ def main():
     epochs = 20
     train_batch_size = 128 # 256
     val_batch_size = 128
-    lr = 3e-4 #ruguoshichuantongde SGDhe StepLR yaoshezhicheng 0.001 # AdamW bachsize=256 shihou 3e-4
+    lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
     save_path = 'output/vit'
     data_dir = "./data"
     Path(save_path).mkdir(exist_ok=True, parents=True)
@@ -146,10 +146,11 @@ def main():
     # 训练、验证
     for epoch in range(0, epochs):
         # generate noise
-        rounds, nlr, lim = 10, 0.02, 2 #lim=1.0, nlr=0.02
+        rounds, nlr, lim = 30, 0.03, 7  #lim=1.0, nlr=0.02
+        eps = 1e-4 #0.001
         print("\n" + "-" * 32 + f"\nEnter epoch {epoch}")
         # delta_x = encoder_level_noise(model, img_loader, rounds, nlr, lim=lim, device=device)
-        delta_x = encoder_level_epsilon_noise(model, img_loader, rounds, nlr, 2, 10, device)
+        delta_x = encoder_level_epsilon_noise(model, img_loader, rounds, nlr, lim, eps, device)
         print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
         # resume from epoch and step
         # train_datasampler.set_epoch(epoch)
