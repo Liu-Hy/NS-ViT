@@ -70,7 +70,7 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
     return delta_x
 
 
-def image_level_nullnoise(model, loader, args, delta_x, device):
+def image_level_nullnoise(model, loader, args, logger, lim, delta_x, device):
     model = model.to(device)
     model.eval()
 
@@ -79,8 +79,9 @@ def image_level_nullnoise(model, loader, args, delta_x, device):
 
     # del_x_shape = (1, 3, img_size, img_size)
     print('Starting magnitude', delta_x.shape, (((delta_x.squeeze(0)) ** 2).sum(dim=0) ** 0.5).mean())
-
+   
     eps = args.eps
+    step = 0
     for i in range(args.epochs):
         for _, (imgs, _) in enumerate(loader):
             delta_x.requires_grad = True
@@ -100,9 +101,11 @@ def image_level_nullnoise(model, loader, args, delta_x, device):
             with torch.no_grad():
                 delta_x -= eps * grad.detach()
 
-        if not i % 50:
+        if i % 100 == 0:
             print(i, error_mult.item())
+            logger.log({f'loss/lim_{lim}': error_mult.item()}, step=step)
         if i in args.milestones:
             eps /= 10.0
+        step += 1
 
     return delta_x

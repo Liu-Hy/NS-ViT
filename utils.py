@@ -43,7 +43,7 @@ def init_wandb(args):
     wandb.login(key=os.getenv('KEY'))
     wandb_logger = wandb.init(
         project=os.getenv('PROJECT'), entity=os.getenv('ENTITY'), resume=is_resume, id=run_id,
-        tags=[args.arch, args.type], group=args.group, config=args
+        tags=[args.arch, args.type], group='robustness', config=args
     )
     return wandb_logger
 
