@@ -425,5 +425,4 @@ def elastic_transform(image, severity=1):
     indices = np.reshape(y + dy, (-1, 1)), np.reshape(x + dx, (-1, 1)), np.reshape(z, (-1, 1))
     return np.clip(map_coordinates(image, indices, order=1, mode='reflect').reshape(shape), 0, 1) * 255
 
-
 # /////////////// End Corruptions ///////////////
