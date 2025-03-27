@@ -1,34 +1,34 @@
 import argparse
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import logging
+from collections import OrderedDict
 
 import timm
 import torch
 from torch import nn
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+
+from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel
 import torch.distributed as dist
 #import wandb
 from dotenv import load_dotenv
 from timm.data import resolve_data_config
+from timm.models import create_model
 from torch.utils.data import SubsetRandomSampler
 from torch.utils import model_zoo
 
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from tqdm import tqdm
+from constants import *
+_logger = logging.getLogger(__name__)
 load_dotenv()
 
-CORRUPTIONS = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur',
-               'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate',
-               'jpeg_compression']
 
-SPLITS = ["train", "val", "adversarial", "damagenet", "rendition", "sketch", "v2"]
-for c in CORRUPTIONS:
-    for s in range(1, 6):
-        SPLITS.append("c-" + c + "-" + str(s))
-
-ALEX = [88.6, 89.4, 92.3, 82.0, 82.6, 78.6, 79.8, 86.7, 82.7, 81.9, 56.5, 85.3, 64.6, 71.8, 60.7]
 def parse_opts():
     parser = argparse.ArgumentParser(description='Nullspace robustness study of deep learning architectures')
     parser.add_argument('--arch', default=None, choices=['vit_base_patch32_224', 'vit_small_patch32_224',
@@ -48,33 +48,12 @@ def parse_opts():
                         help='Picks the pre-saved starting noise from the artifact')
     return parser.parse_args()
 
+
 def empty_gpu():
     import gc
     import torch
     gc.collect()
     torch.cuda.empty_cache()
-
-def init_wandb(args):
-    """Read the wandb run_id from cache, or create a new run_id and cache it.
-    Unpack the arguments to instantiate a wandb logger. """
-    is_resume = False
-    wandb_logger = None
-
-    # resuming a run!
-    if os.path.exists(args.output):
-        is_resume = "must",
-        run_id = open(f"{args.output}/run.id", 'r').read()
-    else:
-        os.makedirs(args.output, exist_ok=True)
-        run_id = wandb.util.generate_id()
-        open(f'{args.output}/run.id', 'w').write(run_id)
-
-    wandb.login(key=os.getenv('KEY'))
-    wandb_logger = wandb.init(
-        project=os.getenv('PROJECT'), entity=os.getenv('ENTITY'), resume=is_resume, id=run_id,
-        tags=[args.arch, args.type], group='robustness', config=args
-    )
-    return wandb_logger
 
 
 def init_dataset(args, model_config):
@@ -90,31 +69,75 @@ def init_dataset(args, model_config):
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=128, shuffle=True, num_workers=32, pin_memory=True)
     return loader, val_loader
 
+
 def get_mean(l):
     return sum(l) / len(l)
 
-def get_model_and_config(model_name, variant=None):
-    pretrained = (variant is None)
-    print(f'{model_name}')
-    model = timm.create_model(model_name, pretrained=pretrained)
-    if variant is not None:
-        if variant == "DAT":
-            ckpt = model_zoo.load_url("http://alisec-competition.oss-cn-shanghai.aliyuncs.com/xiaofeng/easy_robust/benchmark_models/ours/examples/dat/model_best.pth.tar")
-            if 'state_dict' in ckpt.keys():
-                state_dict = ckpt['state_dict']
-            else:
-                state_dict = ckpt
-            if '0.mean' in state_dict.keys() and '0.std' in state_dict.keys():
-                st_dict = dict()
-                for k, v in state_dict.items():
-                    if k.startswith("1."):
-                        st_dict[k[2:]] = v
-                model.load_state_dict(st_dict)
-            else:
-                model.load_state_dict(ckpt)
+
+def load_state_dict(checkpoint_path, use_ema=False):
+    if checkpoint_path and os.path.isfile(checkpoint_path):
+        checkpoint = torch.load(checkpoint_path, map_location='cpu')
+        state_dict_key = ''
+        if isinstance(checkpoint, dict):
+            if use_ema and checkpoint.get('state_dict_ema', None) is not None:
+                state_dict_key = 'state_dict_ema'
+            elif use_ema and checkpoint.get('model_ema', None) is not None:
+                state_dict_key = 'model_ema'
+            elif 'state_dict' in checkpoint:
+                state_dict_key = 'state_dict'
+            elif 'model' in checkpoint:
+                state_dict_key = 'model'
+        if state_dict_key:
+            state_dict = checkpoint[state_dict_key]
+            new_state_dict = OrderedDict()
+            for k, v in state_dict.items():
+                # strip `module.` prefix
+                name = k[7:] if k.startswith('module') else k
+                new_state_dict[name] = v
+            state_dict = new_state_dict
         else:
-            raise NotImplementedError
+            state_dict = checkpoint
+        _logger.info("Loaded {} from checkpoint '{}'".format(state_dict_key, checkpoint_path))
+        # Remove the 0th (normalization) layer from the checkpoint in the DAT model
+        if '0.mean' in state_dict.keys() and '0.std' in state_dict.keys():
+            n_state_dict = OrderedDict()
+            for k, v in state_dict.items():
+                if k.startswith("1."):
+                    n_state_dict[k[2:]] = v
+            state_dict = n_state_dict
+        return state_dict
+    else:
+        _logger.error("No checkpoint found at '{}'".format(checkpoint_path))
+        raise FileNotFoundError()
+
+
+def load_checkpoint(model, checkpoint_path, use_ema=False, strict=True):
+    if os.path.splitext(checkpoint_path)[-1].lower() in ('.npz', '.npy'):
+        # numpy checkpoint, try to load via model specific load_pretrained fn
+        if hasattr(model, 'load_pretrained'):
+            model.load_pretrained(checkpoint_path)
+        else:
+            raise NotImplementedError('Model cannot load numpy checkpoint')
+        return
+    state_dict = load_state_dict(checkpoint_path, use_ema)
+    model.load_state_dict(state_dict, strict=strict)
+
+
+def get_model_and_config(model_name, ckpt_path=None, use_ema=False):
+    print(f"Creating model: {model_name}")
+    model = create_model(
+        model_name,
+        pretrained=False,
+    )
+
+    if ckpt_path is not None:
+        load_checkpoint(model, ckpt_path, use_ema=use_ema, strict=True)
+
     config = resolve_data_config({}, model=model)
+    # Of all ViT models concerned in this work, DAT is the only version that uses mean and std different from default_cfg of the timm model
+    if ckpt_path is not None and "dat" in ckpt_path.lower():
+        config["mean"] = [0.485, 0.456, 0.406]
+        config["std"] = [0.229, 0.224, 0.225]
     print(config)
     try:
         patch_size = model.patch_embed.patch_size[0]
@@ -123,28 +146,12 @@ def get_model_and_config(model_name, variant=None):
         patch_size = 32
         img_size = 224
     print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
-    #config["mean"] = (0., 0., 0.)
-    #config["std"] = (1., 1., 1.)
-
     return model, patch_size, img_size, config
 
-def get_model_and_config_offline(model_name):
-    print(f'{model_name}')
-    model = timm.create_model(model_name, checkpoint_path=os.path.join("models", model_name + ".npz"))
-    config = resolve_data_config({}, model=model)
-    print(config)
-    try:
-        patch_size = model.patch_embed.patch_size[0]
-        img_size = model.patch_embed.img_size[0]
-    except:
-        patch_size = 32
-        img_size = 224
-    print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
-    return model, patch_size, img_size, config
 
 def validate_noise(data_path, model, transform, batch_size, delta_x, val_ratio, device):
     model.eval()
-    if isinstance(model, DistributedDataParallel):
+    if isinstance(model, (DataParallel, DistributedDataParallel)):
         mdl = model.module
     elif isinstance(model, torch.nn.Module):
         mdl = model
@@ -157,10 +164,11 @@ def validate_noise(data_path, model, transform, batch_size, delta_x, val_ratio, 
         t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
         incorr_res = validate_encoder_noise(mdl, clean_path, transform, batch_size, t, val_ratio, device)
 
+
 def encoder_forward(model, x):
     # Concat CLS token to the patch embeddings,
     # Forward pass them through the model encoder to get the features of the CLS token.
-    if isinstance(model, DistributedDataParallel):
+    if isinstance(model, (DataParallel, DistributedDataParallel)):
         mdl = model.module
     elif isinstance(model, torch.nn.Module):
         mdl = model
@@ -172,21 +180,19 @@ def encoder_forward(model, x):
 
     x = torch.cat((cls_token.expand(x.shape[0], -1, -1), x), dim=1)
     x = pos_drop(x + pos_embed)
-    x = blocks(x)  # what is blocks?
+    x = blocks(x)
     x = norm(x)
-    return mdl.pre_logits(x[:, 0])  # What is pre_logits?
+    return mdl.pre_logits(x[:, 0])
 
 
-def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, img_ratio):
+def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, img_ratio, disable=True):
     print(f"img size {img_size}")
     model.eval()
     model.zero_grad()
-    if isinstance(model, DistributedDataParallel):
+    if isinstance(model, (DataParallel, DistributedDataParallel)):
         mdl = model.module
     elif isinstance(model, torch.nn.Module):
         mdl = model
-    #for param in model.parameters():
-        #param.requires_grad = False
 
     patch_embed = mdl.patch_embed
 
@@ -197,7 +203,7 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).cuda(non_blocking=True)
     if isinstance(model, DistributedDataParallel):
         dist.broadcast(delta_x, 0)
-    # TODO: when called by hfai script, should it use hfai.distributed.broadcast instead?
+        # dist.barrier()
     delta_x.requires_grad = True
     print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}", flush=True)
 
@@ -205,7 +211,7 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     scheduler = CosineAnnealingLR(optimizer, len(loader) * rounds)
 
     for i in range(rounds):
-        iterator = tqdm(loader, position=0, leave=True)
+        iterator = tqdm(loader, position=0, disable=disable)
         for st, (imgs, lab) in enumerate(iterator):
             assert delta_x.requires_grad == True
             if st > int(img_ratio * len(loader)) - 1:
@@ -225,22 +231,24 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
             p_og = torch.softmax(og_preds, dim=-1)
             p_alt = torch.softmax(preds, dim=-1)
             mse_probs = (((p_og - p_alt) ** 2).sum(dim=-1)).mean()
+            if isinstance(model, DistributedDataParallel):
+                dist.all_reduce(mse_probs)
+                mse_probs /= dist.get_world_size()
             if mse_probs < eps:
                 print(f"Image finished training at epoch {i} step {st}", flush=True)
                 return delta_x
 
             error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
-            # error_mult = ((preds - og_preds) ** 2).sum(dim=-1).mean()
-            # hinge = torch.max(torch.stack([error_mult - eps, torch.tensor(0)]))
             error_mult.backward()
             if isinstance(model, DistributedDataParallel):
+                dist.barrier()
                 dist.all_reduce(delta_x.grad)
                 delta_x.grad /= dist.get_world_size()
             optimizer.step()
             scheduler.step()
             iterator.set_postfix({"error": round(error_mult.item(), 4)})
         if not (i + 1) % 1:
-            print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}', flush=True)
+            print(f'Noise trained for {i + 1} epochs, error: {round(error_mult.item(), 4)}', flush=True)
 
     return delta_x
 
@@ -256,7 +264,7 @@ def validate_encoder_noise(model, data_path, transform, batch_size, delta_x, val
     val_sampler = SubsetRandomSampler(indices)
 
     loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, sampler=val_sampler, num_workers=16,
-                                             pin_memory=True)
+                                         pin_memory=True)
     model.eval()
     with torch.no_grad():
         for _, (imgs, _) in enumerate(loader):

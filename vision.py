@@ -26,11 +26,11 @@ class VisionDataset(data.Dataset):
     _repr_indent = 4
 
     def __init__(
-        self,
-        root: str,
-        transforms: Optional[Callable] = None,
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
+            self,
+            root: str,
+            transforms: Optional[Callable] = None,
+            transform: Optional[Callable] = None,
+            target_transform: Optional[Callable] = None,
     ) -> None:
         if isinstance(root, str):
             root = os.path.expanduser(root)

@@ -22,7 +22,7 @@ def main(model_name='vit_base_patch32_224', data_dir='data/', output_dir='./outp
         model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=True)
         model = model.to(device)
         model.eval()
-        rounds, nlr = 30, 0.02 # rounds=500
+        rounds, nlr = 30, 0.02  # rounds=500
         del_name = f'enc_{m}_p{patch_size}_im{img_size}_nlr_{nlr}_rounds_{rounds}_lim_{lim}.v1.pth'
 
         base_dataset = datasets.ImageFolder(os.path.join(data_dir, 'train'), transforms.Compose([

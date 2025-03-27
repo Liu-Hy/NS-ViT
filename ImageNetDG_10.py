@@ -1,3 +1,8 @@
+"""This is the superclass version of ImageNetDG.
+Selects pre-defined 380 classes of images from 1000 classes, and merged them into 10 superclasses for 10-way classification
+Used on local machine, or servers with limited computational resources
+"""
+
 import os
 import os.path
 from typing import Any, Callable, cast, Dict, List, Optional, Tuple
@@ -62,11 +67,11 @@ def find_classes(directory: str, info_path: str) -> Tuple[List[str], Dict[str, i
 
 
 def make_dataset(
-    directory: str,
-    info_path: str,
-    class_to_idx: Optional[Dict[str, int]] = None,
-    extensions: Optional[Union[str, Tuple[str, ...]]] = None,
-    is_valid_file: Optional[Callable[[str], bool]] = None,
+        directory: str,
+        info_path: str,
+        class_to_idx: Optional[Dict[str, int]] = None,
+        extensions: Optional[Union[str, Tuple[str, ...]]] = None,
+        is_valid_file: Optional[Callable[[str], bool]] = None,
 ) -> List[Tuple[str, int]]:
     """Generates a list of samples of a form (path_to_sample, class).
 
@@ -88,7 +93,6 @@ def make_dataset(
         raise ValueError("Both extensions and is_valid_file cannot be None or not None at the same time")
 
     if extensions is not None:
-
         def is_valid_file(x: str) -> bool:
             return has_file_allowed_extension(x, extensions)  # type: ignore[arg-type]
 
@@ -110,22 +114,6 @@ def make_dataset(
                 if target_class not in available_classes:
                     available_classes.add(target_class)
 
-        """for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
-            for fname in sorted(fnames):
-                path = os.path.join(root, fname)
-                if is_valid_file(path):
-                    item = path, class_index
-                    instances.append(item)
-
-                    if target_class not in available_classes:
-                        available_classes.add(target_class)"""
-
-    """empty_classes = set(class_to_idx.keys()) - available_classes
-    if empty_classes:
-        msg = f"Found no valid file for the classes {', '.join(sorted(empty_classes))}. "
-        if extensions is not None:
-            msg += f"Supported extensions are: {extensions if isinstance(extensions, str) else ', '.join(extensions)}"
-        raise FileNotFoundError(msg)"""
     assert len(instances) > 0, "The dataset cannot be empty!"
     return instances, sorted(available_classes)
 
@@ -158,14 +146,14 @@ class DatasetFolder(VisionDataset):
     """
 
     def __init__(
-        self,
-        root: str,
-        info_path: str,
-        loader: Callable[[str], Any],
-        extensions: Optional[Tuple[str, ...]] = None,
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
-        is_valid_file: Optional[Callable[[str], bool]] = None,
+            self,
+            root: str,
+            info_path: str,
+            loader: Callable[[str], Any],
+            extensions: Optional[Tuple[str, ...]] = None,
+            transform: Optional[Callable] = None,
+            target_transform: Optional[Callable] = None,
+            is_valid_file: Optional[Callable[[str], bool]] = None,
     ) -> None:
         super().__init__(root, transform=transform, target_transform=target_transform)
         classes, class_to_idx = self.find_classes(self.root, info_path)
@@ -180,11 +168,11 @@ class DatasetFolder(VisionDataset):
 
     @staticmethod
     def make_dataset(
-        directory: str,
-        info_path: str,
-        class_to_idx: Dict[str, int],
-        extensions: Optional[Tuple[str, ...]] = None,
-        is_valid_file: Optional[Callable[[str], bool]] = None,
+            directory: str,
+            info_path: str,
+            class_to_idx: Dict[str, int],
+            extensions: Optional[Tuple[str, ...]] = None,
+            is_valid_file: Optional[Callable[[str], bool]] = None,
     ) -> List[Tuple[str, int]]:
         """Generates a list of samples of a form (path_to_sample, class).
 
@@ -277,6 +265,7 @@ class DatasetFolder(VisionDataset):
         meta["targets"] = np.array(self.targets, dtype=np.int32)
         return meta
 
+
 IMG_EXTENSIONS = (".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp")
 
 
@@ -307,7 +296,7 @@ def default_loader(path: str) -> Any:
         return pil_loader(path)
 
 
-class ImageFolder(DatasetFolder):
+class ImageNetDG_10(DatasetFolder):
     """A generic data loader where the images are arranged in this way by default: ::
 
         root/dog/xxx.png
@@ -338,13 +327,13 @@ class ImageFolder(DatasetFolder):
     """
 
     def __init__(
-        self,
-        root: str,
-        info_path: str,
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
-        loader: Callable[[str], Any] = default_loader,
-        is_valid_file: Optional[Callable[[str], bool]] = None,
+            self,
+            root: str,
+            info_path: str,
+            transform: Optional[Callable] = None,
+            target_transform: Optional[Callable] = None,
+            loader: Callable[[str], Any] = default_loader,
+            is_valid_file: Optional[Callable[[str], bool]] = None,
     ):
         if isinstance(root, Path):
             root = str(root)
@@ -364,43 +353,11 @@ class ImageFolder(DatasetFolder):
         )
         self.imgs = self.samples
 
-#ori_data_dir = "/var/lib/data/"
+
+# ori_data_dir = "/var/lib/data/"
 info_path = "../info"
 
 corruptions = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur',
                'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate',
                'jpeg_compression']
 
-def get_datasets(ori_data_dir):
-    """
-    Get dataset and name tuple list of COCO
-
-    Args:
-        ori_data_dir (Path): directory for original dataset
-
-    Returns:
-        dataset_pairs (list): dataset and split tuple list
-
-    """
-    data = dict()
-    data["train"] = ImageFolder(os.path.join(ori_data_dir, "imagenet/train"), info_path)
-    data["val"] = ImageFolder(os.path.join(ori_data_dir, "imagenet/val"), info_path)
-    for c in corruptions:
-        c_path = os.path.join(ori_data_dir, "corruption", c)
-        assert os.path.isdir(c_path)
-        for i in range(1, 6):
-            s_path = os.path.join(c_path, str(i), "val")
-            assert os.path.isdir(s_path)
-            split = f"c-{c}-{i}"
-            data[split] = ImageFolder(s_path, info_path)
-    for typ in ["adversarial", "damagenet", "rendition", "sketch", "v2"]:
-        typ_path = os.path.join(ori_data_dir, typ)
-        assert os.path.isdir(typ_path)
-        if len(os.listdir(typ_path)) < 4 and "val" in os.listdir(typ_path):
-            typ_path = os.path.join(typ_path, "val")
-        data[typ] = ImageFolder(typ_path, info_path)
-
-    return [(v, k) for k, v in data.items()]
-    """return [
-        (val_data, 'val')
-    ]"""
