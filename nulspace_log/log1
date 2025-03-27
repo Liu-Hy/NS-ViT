@@ -1,0 +1,194 @@
+model de xunlian shiyong CV chuantongde :
+optimizer = SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-4)
+scheduler = StepLR(optimizer, step_size=30, gamma=0.9)
+
+epochs = 20
+batch_size = 50
+lr = 0.001
+
+image de xunlian:
+rounds, nlr, lim = 30, 0.02, 1.0
+
+traning set only select 10% for the training of both
+
+
+--------------
+
+(hl) techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py
+cuda:0
+vit_base_patch32_224 is pretrained? True
+{'input_size': (3, 224, 224), 'interpolation': 'bicubic', 'mean': (0.5, 0.5, 0.5), 'std': (0.5, 0.5, 0.5), 'crop_pct': 0.9}
+vit_base_patch32_224, 224x224, patch_size:32
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0367, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 12.889006614685059
+Noise trained for 20 epochs, error: 8.666318893432617
+Noise trained for 30 epochs, error: 7.921926021575928
+Noise norm: 92.90016174316406
+Epoch: 0, Step: 0, Loss: 13.340042114257812
+Epoch: 0, Loss: 6.085167669480847, Acc1: 9.38%, Acc5: 19.06%
+New Best Acc: 9.38%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0235, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 12.598339080810547
+Noise trained for 20 epochs, error: 9.097207069396973
+Noise trained for 30 epochs, error: 8.381513595581055
+Noise norm: 94.72835540771484
+Epoch: 1, Step: 0, Loss: 5.988730430603027
+Epoch: 1, Loss: 2.0962078955865677, Acc1: 72.71%, Acc5: 91.46%
+New Best Acc: 72.71%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0255, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 11.028688430786133
+Noise trained for 20 epochs, error: 8.284459114074707
+Noise trained for 30 epochs, error: 7.747588634490967
+Noise norm: 96.14410400390625
+Epoch: 2, Step: 0, Loss: 2.0165395736694336
+Epoch: 2, Loss: 0.5255232780210434, Acc1: 89.91%, Acc5: 97.45%
+New Best Acc: 89.91%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0342, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 13.842779159545898
+Noise trained for 20 epochs, error: 10.749870300292969
+Noise trained for 30 epochs, error: 10.7589693069458
+Noise norm: 98.07376098632812
+Epoch: 3, Step: 0, Loss: 0.3418320417404175
+Epoch: 3, Loss: 0.20785410173477664, Acc1: 95.59%, Acc5: 99.31%
+New Best Acc: 95.59%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0347, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 14.075980186462402
+Noise trained for 20 epochs, error: 10.951876640319824
+Noise trained for 30 epochs, error: 10.629402160644531
+Noise norm: 98.96012115478516
+Epoch: 4, Step: 0, Loss: 0.11820576339960098
+Epoch: 4, Loss: 0.12677088860542543, Acc1: 97.38%, Acc5: 99.59%
+New Best Acc: 97.38%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0306, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 13.030611991882324
+Noise trained for 20 epochs, error: 9.589798927307129
+Noise trained for 30 epochs, error: 9.324543952941895
+Noise norm: 97.4759292602539
+Epoch: 5, Step: 0, Loss: 0.0573684424161911
+Epoch: 5, Loss: 0.10454865424863753, Acc1: 97.58%, Acc5: 99.69%
+New Best Acc: 97.58%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0311, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 12.073936462402344
+Noise trained for 20 epochs, error: 9.34768295288086
+Noise trained for 30 epochs, error: 9.07161808013916
+Noise norm: 96.79621887207031
+Epoch: 6, Step: 0, Loss: 0.04254372417926788
+Epoch: 6, Loss: 0.09161700740937263, Acc1: 97.78%, Acc5: 99.77%
+New Best Acc: 97.78%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0278, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 11.398489952087402
+Noise trained for 20 epochs, error: 8.839615821838379
+Noise trained for 30 epochs, error: 7.827046871185303
+Noise norm: 95.9927978515625
+Epoch: 7, Step: 0, Loss: 0.0181027390062809
+Epoch: 7, Loss: 0.082338317748039, Acc1: 97.89%, Acc5: 99.80%
+New Best Acc: 97.89%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0418, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 11.67785358428955
+Noise trained for 20 epochs, error: 8.730193138122559
+Noise trained for 30 epochs, error: 8.442462921142578
+Noise norm: 96.84656524658203
+Epoch: 8, Step: 0, Loss: 0.014296765439212322
+Epoch: 8, Loss: 0.07704412552618212, Acc1: 97.89%, Acc5: 99.80%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0375, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.945672988891602
+Noise trained for 20 epochs, error: 8.21390151977539
+Noise trained for 30 epochs, error: 7.456761360168457
+Noise norm: 95.38970947265625
+Epoch: 9, Step: 0, Loss: 0.009678211063146591
+Epoch: 9, Loss: 0.0738097160093246, Acc1: 97.89%, Acc5: 99.82%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0387, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.91868782043457
+Noise trained for 20 epochs, error: 8.744464874267578
+Noise trained for 30 epochs, error: 7.863809585571289
+Noise norm: 96.42182159423828
+Epoch: 10, Step: 0, Loss: 0.006109642330557108
+Epoch: 10, Loss: 0.07297322057908581, Acc1: 97.94%, Acc5: 99.80%
+New Best Acc: 97.94%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0326, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.7363862991333
+Noise trained for 20 epochs, error: 8.029287338256836
+Noise trained for 30 epochs, error: 8.155257225036621
+Noise norm: 95.5219955444336
+Epoch: 11, Step: 0, Loss: 0.004125094506889582
+Epoch: 11, Loss: 0.07029317271324896, Acc1: 97.89%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0219, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 11.180752754211426
+Noise trained for 20 epochs, error: 8.302059173583984
+Noise trained for 30 epochs, error: 7.856800079345703
+Noise norm: 95.89309692382812
+Epoch: 12, Step: 0, Loss: 0.004498806782066822
+Epoch: 12, Loss: 0.07040799817731304, Acc1: 97.94%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0366, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.776894569396973
+Noise trained for 20 epochs, error: 8.004858016967773
+Noise trained for 30 epochs, error: 7.724482536315918
+Noise norm: 95.1966323852539
+Epoch: 13, Step: 0, Loss: 0.003316472750157118
+Epoch: 13, Loss: 0.06970381736755371, Acc1: 97.96%, Acc5: 99.80%
+New Best Acc: 97.96%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0328, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.772698402404785
+Noise trained for 20 epochs, error: 8.006672859191895
+Noise trained for 30 epochs, error: 7.619617938995361
+Noise norm: 95.09027099609375
+Epoch: 14, Step: 0, Loss: 0.0038727261126041412
+Epoch: 14, Loss: 0.06871915632678617, Acc1: 97.96%, Acc5: 99.80%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0211, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.45407485961914
+Noise trained for 20 epochs, error: 7.926615238189697
+Noise trained for 30 epochs, error: 7.281791687011719
+Noise norm: 95.4081039428711
+Epoch: 15, Step: 0, Loss: 0.004078379366546869
+Epoch: 15, Loss: 0.06864616947789345, Acc1: 97.96%, Acc5: 99.80%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0308, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.600314140319824
+Noise trained for 20 epochs, error: 8.21342945098877
+Noise trained for 30 epochs, error: 7.695563793182373
+Noise norm: 95.49308013916016
+Epoch: 16, Step: 0, Loss: 0.0031069971155375242
+Epoch: 16, Loss: 0.06915693129262616, Acc1: 97.99%, Acc5: 99.80%
+New Best Acc: 97.99%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0362, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 11.004886627197266
+Noise trained for 20 epochs, error: 8.469484329223633
+Noise trained for 30 epochs, error: 7.569150924682617
+Noise norm: 97.21006774902344
+Epoch: 17, Step: 0, Loss: 0.002925948239862919
+Epoch: 17, Loss: 0.06826271549347908, Acc1: 97.99%, Acc5: 99.80%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0379, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.787391662597656
+Noise trained for 20 epochs, error: 8.402070045471191
+Noise trained for 30 epochs, error: 7.35863733291626
+Noise norm: 95.45524597167969
+Epoch: 18, Step: 0, Loss: 0.002218803623691201
+Epoch: 18, Loss: 0.06843845305904266, Acc1: 98.01%, Acc5: 99.80%
+New Best Acc: 98.01%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0384, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 10.374265670776367
+Noise trained for 20 epochs, error: 8.053967475891113
+Noise trained for 30 epochs, error: 7.645934581756592
+Noise norm: 95.77607727050781
+Epoch: 19, Step: 0, Loss: 0.002440530573949218
+Epoch: 19, Loss: 0.06813828406795379, Acc1: 98.04%, Acc5: 99.80%
+New Best Acc: 98.04%!

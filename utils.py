@@ -31,6 +31,11 @@ def parse_opts():
                         help='Picks the pre-saved starting noise from the artifact')
     return parser.parse_args()
 
+def empty_gpu():
+    import gc
+    import torch
+    gc.collect()
+    torch.cuda.empty_cache()
 
 def init_wandb(args):
     """Read the wandb run_id from cache, or create a new run_id and cache it.
@@ -70,7 +75,7 @@ def init_dataset(args, model_config):
 
 
 def get_model_and_config(model_name, pretrained=True):
-    print(f'{model_name} is pretrained? {pretrained}')
+    print(f'{model_name} pretrained: {pretrained}')
     model = timm.create_model(model_name, pretrained=pretrained)
     config = resolve_data_config({}, model=model)
     print(config)

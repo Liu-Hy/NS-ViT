@@ -1,0 +1,373 @@
+from now on, sampling limit changed to 2
+round changed to 10
+
+
+(hl) techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py
+cuda:0
+vit_base_patch32_224 pretrained: True
+{'input_size': (3, 224, 224), 'interpolation': 'bicubic', 'mean': (0.5, 0.5, 0.5), 'std': (0.5, 0.5, 0.5), 'crop_pct': 0.9}
+vit_base_patch32_224, 224x224, patch_size:32
+
+--------------------------------
+Enter epoch 0
+Noise trained for 2 epochs, error: 34.8027
+Noise trained for 4 epochs, error: 30.7793
+Noise trained for 6 epochs, error: 29.0135
+Noise trained for 8 epochs, error: 29.4438
+Noise trained for 10 epochs, error: 28.5245
+Noise norm: 205.7362
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 1200.6390     MSE LOGITS: 1034.4172   MSE PROBS: 0.1202       ABS MAX PROB: 0.1621    MSE MAX PROB: 0.0778    EQ CLS: 0.8115
+MSE FEATS: 1856.8453     MSE LOGITS: 1587.8099   MSE PROBS: 0.2072       ABS MAX PROB: 0.2503    MSE MAX PROB: 0.1456    EQ CLS: 0.7233
+---- Training model
+Step 0, Loss: 13.7049, consistency_ratio: 35.7861
+Step 20, Loss: 0.1068, consistency_ratio: 658.2325
+Step 40, Loss: 0.1961, consistency_ratio: 429.28
+Step 60, Loss: 0.04, consistency_ratio: 1525.7598
+Validation loss: 0.11229820405283282, Acc1: 96.38%, Acc5: 99.82%
+New Best Acc: 96.38%
+
+--------------------------------
+Enter epoch 1
+Noise trained for 2 epochs, error: 12.006
+Noise trained for 4 epochs, error: 10.4264
+Noise trained for 6 epochs, error: 9.7813
+Noise trained for 8 epochs, error: 8.7743
+Noise trained for 10 epochs, error: 9.42
+Noise norm: 201.1477
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 157.6900      MSE LOGITS: 137.6695    MSE PROBS: 0.0191       ABS MAX PROB: 0.0306    MSE MAX PROB: 0.0108    EQ CLS: 0.9745
+MSE FEATS: 270.7827      MSE LOGITS: 245.9364    MSE PROBS: 0.0460       ABS MAX PROB: 0.0559    MSE MAX PROB: 0.0256    EQ CLS: 0.9534
+---- Training model
+Step 0, Loss: 0.0164, consistency_ratio: 2361.321
+Step 20, Loss: 0.0878, consistency_ratio: 663.2339
+Step 40, Loss: 0.0661, consistency_ratio: 1016.02
+Step 60, Loss: 0.0273, consistency_ratio: 1609.9398
+Validation loss: 0.08821759685393303, Acc1: 97.43%, Acc5: 99.90%
+New Best Acc: 97.43%
+
+--------------------------------
+Enter epoch 2
+Noise trained for 2 epochs, error: 13.2805
+Noise trained for 4 epochs, error: 11.303
+Noise trained for 6 epochs, error: 9.9645
+Noise trained for 8 epochs, error: 9.2662
+Noise trained for 10 epochs, error: 9.6674
+Noise norm: 202.0834
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 175.3116      MSE LOGITS: 152.4126    MSE PROBS: 0.0205       ABS MAX PROB: 0.0273    MSE MAX PROB: 0.0113    EQ CLS: 0.9761
+MSE FEATS: 304.6221      MSE LOGITS: 275.8729    MSE PROBS: 0.0411       ABS MAX PROB: 0.0466    MSE MAX PROB: 0.0230    EQ CLS: 0.9597
+---- Training model
+Step 0, Loss: 0.002, consistency_ratio: 19741.3848
+Step 20, Loss: 0.0032, consistency_ratio: 1909.506
+Step 40, Loss: 0.0074, consistency_ratio: 6526.9648
+Step 60, Loss: 0.0023, consistency_ratio: 16695.3203
+Validation loss: 0.09933635496324109, Acc1: 96.94%, Acc5: 99.97%
+
+--------------------------------
+Enter epoch 3
+Noise trained for 2 epochs, error: 12.2485
+Noise trained for 4 epochs, error: 9.5978
+Noise trained for 6 epochs, error: 8.8661
+Noise trained for 8 epochs, error: 8.6134
+Noise trained for 10 epochs, error: 8.8238
+Noise norm: 201.1688
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 150.9184      MSE LOGITS: 129.8696    MSE PROBS: 0.0209       ABS MAX PROB: 0.0256    MSE MAX PROB: 0.0111    EQ CLS: 0.9753
+MSE FEATS: 277.8944      MSE LOGITS: 252.7402    MSE PROBS: 0.0401       ABS MAX PROB: 0.0435    MSE MAX PROB: 0.0220    EQ CLS: 0.9582
+---- Training model
+Step 0, Loss: 0.0019, consistency_ratio: 29266.3398
+Step 20, Loss: 0.001, consistency_ratio: 22433.0254
+Step 40, Loss: 0.022, consistency_ratio: 3322.616
+Step 60, Loss: 0.0003, consistency_ratio: 54862.1641
+Validation loss: 0.10764098936511625, Acc1: 97.12%, Acc5: 99.97%
+
+--------------------------------
+Enter epoch 4
+Noise trained for 2 epochs, error: 11.6674
+Noise trained for 4 epochs, error: 9.7103
+Noise trained for 6 epochs, error: 9.4998
+Noise trained for 8 epochs, error: 8.7381
+Noise trained for 10 epochs, error: 9.0408
+Noise norm: 203.1661
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 168.2428      MSE LOGITS: 151.5850    MSE PROBS: 0.0281       ABS MAX PROB: 0.0281    MSE MAX PROB: 0.0143    EQ CLS: 0.9720
+MSE FEATS: 273.5728      MSE LOGITS: 259.1742    MSE PROBS: 0.0436       ABS MAX PROB: 0.0412    MSE MAX PROB: 0.0231    EQ CLS: 0.9546
+---- Training model
+Step 0, Loss: 0.0001, consistency_ratio: 243937.6406
+Step 20, Loss: 0.0018, consistency_ratio: 7098.165
+Step 40, Loss: 0.0152, consistency_ratio: 2205.3726
+Step 60, Loss: 0.0707, consistency_ratio: 671.6947
+Validation loss: 0.14868390175604052, Acc1: 95.97%, Acc5: 99.72%
+
+--------------------------------
+Enter epoch 5
+Noise trained for 2 epochs, error: 11.8388
+Noise trained for 4 epochs, error: 10.1161
+Noise trained for 6 epochs, error: 9.2454
+Noise trained for 8 epochs, error: 8.3399
+Noise trained for 10 epochs, error: 8.4798
+Noise norm: 202.8206
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 142.0436      MSE LOGITS: 125.6113    MSE PROBS: 0.0234       ABS MAX PROB: 0.0296    MSE MAX PROB: 0.0125    EQ CLS: 0.9722
+MSE FEATS: 266.1538      MSE LOGITS: 254.3452    MSE PROBS: 0.0510       ABS MAX PROB: 0.0503    MSE MAX PROB: 0.0275    EQ CLS: 0.9513
+---- Training model
+Step 0, Loss: 0.0026, consistency_ratio: 10586.8066
+Step 20, Loss: 0.0051, consistency_ratio: 7742.3799
+Step 40, Loss: 0.0019, consistency_ratio: 9834.1826
+Step 60, Loss: 0.0075, consistency_ratio: 2753.8877
+Validation loss: 0.14353939794724987, Acc1: 95.92%, Acc5: 99.80%
+
+--------------------------------
+Enter epoch 6
+Noise trained for 2 epochs, error: 10.4794
+Noise trained for 4 epochs, error: 9.3029
+Noise trained for 6 epochs, error: 7.3203
+Noise trained for 8 epochs, error: 7.7832
+Noise trained for 10 epochs, error: 7.8126
+Noise norm: 199.8441
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 128.3290      MSE LOGITS: 113.2274    MSE PROBS: 0.0246       ABS MAX PROB: 0.0297    MSE MAX PROB: 0.0129    EQ CLS: 0.9664
+MSE FEATS: 232.2653      MSE LOGITS: 216.8991    MSE PROBS: 0.0512       ABS MAX PROB: 0.0514    MSE MAX PROB: 0.0275    EQ CLS: 0.9470
+---- Training model
+Step 0, Loss: 0.0058, consistency_ratio: 6550.5972
+Step 20, Loss: 0.014, consistency_ratio: 2130.1785
+Step 40, Loss: 0.003, consistency_ratio: 20762.4785
+Step 60, Loss: 0.0083, consistency_ratio: 1916.9658
+Validation loss: 0.16124288497432585, Acc1: 96.23%, Acc5: 99.75%
+
+--------------------------------
+Enter epoch 7
+Noise trained for 2 epochs, error: 10.6416
+Noise trained for 4 epochs, error: 9.4416
+Noise trained for 6 epochs, error: 7.89
+Noise trained for 8 epochs, error: 7.9522
+Noise trained for 10 epochs, error: 8.0201
+Noise norm: 203.1477
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 139.5538      MSE LOGITS: 122.0201    MSE PROBS: 0.0232       ABS MAX PROB: 0.0267    MSE MAX PROB: 0.0124    EQ CLS: 0.9745
+MSE FEATS: 236.9855      MSE LOGITS: 216.0988    MSE PROBS: 0.0423       ABS MAX PROB: 0.0415    MSE MAX PROB: 0.0226    EQ CLS: 0.9592
+---- Training model
+Step 0, Loss: 0.0003, consistency_ratio: 88285.3516
+Step 20, Loss: 0.0002, consistency_ratio: 72636.6484
+Step 40, Loss: 0.0009, consistency_ratio: 16395.0586
+Step 60, Loss: 0.0075, consistency_ratio: 3143.9514
+Validation loss: 0.1168851544780116, Acc1: 96.82%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 8
+Noise trained for 2 epochs, error: 10.4326
+Noise trained for 4 epochs, error: 8.5792
+Noise trained for 6 epochs, error: 8.3449
+Noise trained for 8 epochs, error: 7.2313
+Noise trained for 10 epochs, error: 7.6133
+Noise norm: 202.6062
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 133.8518      MSE LOGITS: 118.2383    MSE PROBS: 0.0244       ABS MAX PROB: 0.0252    MSE MAX PROB: 0.0127    EQ CLS: 0.9735
+MSE FEATS: 239.5989      MSE LOGITS: 225.9782    MSE PROBS: 0.0398       ABS MAX PROB: 0.0373    MSE MAX PROB: 0.0212    EQ CLS: 0.9631
+---- Training model
+Step 0, Loss: 0.0001, consistency_ratio: 141722.25
+Step 20, Loss: 0.0002, consistency_ratio: 136831.6562
+Step 40, Loss: 0.0009, consistency_ratio: 67283.8672
+Step 60, Loss: 0.0, consistency_ratio: 752304.875
+Validation loss: 0.10042582019682854, Acc1: 97.38%, Acc5: 99.97%
+
+--------------------------------
+Enter epoch 9
+Noise trained for 2 epochs, error: 10.29
+Noise trained for 4 epochs, error: 8.5893
+Noise trained for 6 epochs, error: 8.2532
+Noise trained for 8 epochs, error: 8.2814
+Noise trained for 10 epochs, error: 7.0301
+Noise norm: 202.5569
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 141.3766      MSE LOGITS: 126.0675    MSE PROBS: 0.0234       ABS MAX PROB: 0.0238    MSE MAX PROB: 0.0122    EQ CLS: 0.9781
+MSE FEATS: 235.9016      MSE LOGITS: 221.9580    MSE PROBS: 0.0399       ABS MAX PROB: 0.0353    MSE MAX PROB: 0.0207    EQ CLS: 0.9625
+---- Training model
+Step 0, Loss: 0.0001, consistency_ratio: 348319.4688
+Step 20, Loss: 0.0001, consistency_ratio: 318960.9688
+Step 40, Loss: 0.0001, consistency_ratio: 191359.5781
+Step 60, Loss: 0.0001, consistency_ratio: 633273.6875
+Validation loss: 0.11601400375366211, Acc1: 97.17%, Acc5: 99.92%
+
+--------------------------------
+Enter epoch 10
+Noise trained for 2 epochs, error: 11.6032
+Noise trained for 4 epochs, error: 9.5768
+Noise trained for 6 epochs, error: 8.223
+Noise trained for 8 epochs, error: 8.6947
+Noise trained for 10 epochs, error: 7.6534
+Noise norm: 203.5684
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 144.4105      MSE LOGITS: 129.8639    MSE PROBS: 0.0244       ABS MAX PROB: 0.0232    MSE MAX PROB: 0.0128    EQ CLS: 0.9732
+MSE FEATS: 239.6407      MSE LOGITS: 226.5326    MSE PROBS: 0.0384       ABS MAX PROB: 0.0333    MSE MAX PROB: 0.0200    EQ CLS: 0.9641
+---- Training model
+Step 0, Loss: 0.0001, consistency_ratio: 148437.9062
+Step 20, Loss: 0.0002, consistency_ratio: 323638.7188
+Step 40, Loss: 0.0002, consistency_ratio: 139522.375
+Step 60, Loss: 0.0001, consistency_ratio: 183076.9844
+Validation loss: 0.11019316027241369, Acc1: 97.15%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 11
+Noise trained for 2 epochs, error: 10.3881
+Noise trained for 4 epochs, error: 9.0267
+Noise trained for 6 epochs, error: 8.2178
+Noise trained for 8 epochs, error: 7.8319
+Noise trained for 10 epochs, error: 7.6275
+Noise norm: 203.8885
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 140.6773      MSE LOGITS: 126.1885    MSE PROBS: 0.0261       ABS MAX PROB: 0.0258    MSE MAX PROB: 0.0136    EQ CLS: 0.9720
+MSE FEATS: 238.8525      MSE LOGITS: 226.6085    MSE PROBS: 0.0416       ABS MAX PROB: 0.0380    MSE MAX PROB: 0.0218    EQ CLS: 0.9603
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 912629.5625
+Step 20, Loss: 0.0001, consistency_ratio: 592649.9375
+Step 40, Loss: 0.0001, consistency_ratio: 168440.1875
+Step 60, Loss: 0.0, consistency_ratio: 721310.5
+Validation loss: 0.10664976796796245, Acc1: 97.35%, Acc5: 99.92%
+
+--------------------------------
+Enter epoch 12
+Noise trained for 2 epochs, error: 11.3152
+Noise trained for 4 epochs, error: 9.4505
+Noise trained for 6 epochs, error: 9.0268
+Noise trained for 8 epochs, error: 7.7148
+Noise trained for 10 epochs, error: 8.1467
+Noise norm: 203.187
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 138.9401      MSE LOGITS: 123.8577    MSE PROBS: 0.0234       ABS MAX PROB: 0.0227    MSE MAX PROB: 0.0121    EQ CLS: 0.9778
+MSE FEATS: 242.7578      MSE LOGITS: 228.3648    MSE PROBS: 0.0440       ABS MAX PROB: 0.0354    MSE MAX PROB: 0.0226    EQ CLS: 0.9646
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 749528.25
+Step 20, Loss: 0.0, consistency_ratio: 842250.75
+Step 40, Loss: 0.0003, consistency_ratio: 18458.293
+Step 60, Loss: 0.0, consistency_ratio: 580340.9375
+Validation loss: 0.10063891257009198, Acc1: 97.61%, Acc5: 99.92%
+New Best Acc: 97.61%
+
+--------------------------------
+Enter epoch 13
+Noise trained for 2 epochs, error: 10.9803
+Noise trained for 4 epochs, error: 9.2916
+Noise trained for 6 epochs, error: 8.2414
+Noise trained for 8 epochs, error: 7.2222
+Noise trained for 10 epochs, error: 8.1428
+Noise norm: 202.3301
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 135.0089      MSE LOGITS: 120.2762    MSE PROBS: 0.0236       ABS MAX PROB: 0.0226    MSE MAX PROB: 0.0123    EQ CLS: 0.9755
+MSE FEATS: 236.0514      MSE LOGITS: 218.4371    MSE PROBS: 0.0374       ABS MAX PROB: 0.0323    MSE MAX PROB: 0.0200    EQ CLS: 0.9666
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 212760.0469
+Step 20, Loss: 0.0001, consistency_ratio: 100147.9062
+Step 40, Loss: 0.0, consistency_ratio: 601890.1875
+Step 60, Loss: 0.0, consistency_ratio: 999389.0625
+Validation loss: 0.10222210422638923, Acc1: 97.61%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 14
+Noise trained for 2 epochs, error: 9.935
+Noise trained for 4 epochs, error: 8.7058
+Noise trained for 6 epochs, error: 7.6552
+Noise trained for 8 epochs, error: 8.0084
+Noise trained for 10 epochs, error: 8.2279
+Noise norm: 204.2962
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 139.3862      MSE LOGITS: 124.7266    MSE PROBS: 0.0230       ABS MAX PROB: 0.0220    MSE MAX PROB: 0.0119    EQ CLS: 0.9778
+MSE FEATS: 245.1779      MSE LOGITS: 230.2494    MSE PROBS: 0.0412       ABS MAX PROB: 0.0341    MSE MAX PROB: 0.0212    EQ CLS: 0.9636
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 428155.8438
+Step 20, Loss: 0.0001, consistency_ratio: 498671.2188
+Step 40, Loss: 0.0, consistency_ratio: 1058408.875
+Step 60, Loss: 0.0, consistency_ratio: 683754.625
+Validation loss: 0.10027890051564863, Acc1: 97.50%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 15
+Noise trained for 2 epochs, error: 11.8071
+Noise trained for 4 epochs, error: 8.6497
+Noise trained for 6 epochs, error: 8.0153
+Noise trained for 8 epochs, error: 8.1921
+Noise trained for 10 epochs, error: 8.0944
+Noise norm: 203.9233
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 141.3674      MSE LOGITS: 125.9866    MSE PROBS: 0.0241       ABS MAX PROB: 0.0226    MSE MAX PROB: 0.0126    EQ CLS: 0.9771
+MSE FEATS: 244.0161      MSE LOGITS: 227.9327    MSE PROBS: 0.0410       ABS MAX PROB: 0.0342    MSE MAX PROB: 0.0214    EQ CLS: 0.9648
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 952501.4375
+Step 20, Loss: 0.0, consistency_ratio: 691050.125
+Step 40, Loss: 0.0001, consistency_ratio: 555924.25
+Step 60, Loss: 0.0, consistency_ratio: 893779.125
+Validation loss: 0.10005843254827684, Acc1: 97.50%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 16
+Noise trained for 2 epochs, error: 11.7059
+Noise trained for 4 epochs, error: 8.9944
+Noise trained for 6 epochs, error: 8.2192
+Noise trained for 8 epochs, error: 8.4747
+Noise trained for 10 epochs, error: 7.2834
+Noise norm: 204.0371
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 141.0679      MSE LOGITS: 125.5822    MSE PROBS: 0.0224       ABS MAX PROB: 0.0214    MSE MAX PROB: 0.0117    EQ CLS: 0.9778
+MSE FEATS: 244.2334      MSE LOGITS: 228.0962    MSE PROBS: 0.0386       ABS MAX PROB: 0.0323    MSE MAX PROB: 0.0199    EQ CLS: 0.9666
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 1631430.875
+Step 20, Loss: 0.0, consistency_ratio: 723866.5
+Step 40, Loss: 0.0, consistency_ratio: 804447.8125
+Step 60, Loss: 0.0, consistency_ratio: 1173650.125
+Validation loss: 0.10084032243297945, Acc1: 97.48%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 17
+Noise trained for 2 epochs, error: 10.8517
+Noise trained for 4 epochs, error: 8.9151
+Noise trained for 6 epochs, error: 7.9803
+Noise trained for 8 epochs, error: 7.8272
+Noise trained for 10 epochs, error: 6.8737
+Noise norm: 203.1718
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 138.0262      MSE LOGITS: 123.3931    MSE PROBS: 0.0205       ABS MAX PROB: 0.0204    MSE MAX PROB: 0.0106    EQ CLS: 0.9801
+MSE FEATS: 243.6073      MSE LOGITS: 228.2366    MSE PROBS: 0.0391       ABS MAX PROB: 0.0331    MSE MAX PROB: 0.0205    EQ CLS: 0.9646
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 1134496.25
+Step 20, Loss: 0.0, consistency_ratio: 264591.875
+Step 40, Loss: 0.0, consistency_ratio: 959212.0
+Step 60, Loss: 0.0, consistency_ratio: 880687.125
+Validation loss: 0.10339429301600303, Acc1: 97.48%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 18
+Noise trained for 2 epochs, error: 11.4511
+Noise trained for 4 epochs, error: 8.9831
+Noise trained for 6 epochs, error: 8.4153
+Noise trained for 8 epochs, error: 7.7587
+Noise trained for 10 epochs, error: 8.0802
+Noise norm: 204.1581
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 138.5212      MSE LOGITS: 123.9157    MSE PROBS: 0.0216       ABS MAX PROB: 0.0207    MSE MAX PROB: 0.0110    EQ CLS: 0.9776
+MSE FEATS: 247.2798      MSE LOGITS: 231.1070    MSE PROBS: 0.0405       ABS MAX PROB: 0.0343    MSE MAX PROB: 0.0212    EQ CLS: 0.9666
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 1070228.125
+Step 20, Loss: 0.0, consistency_ratio: 961748.25
+Step 40, Loss: 0.0, consistency_ratio: 797422.625
+Step 60, Loss: 0.0, consistency_ratio: 893833.75
+Validation loss: 0.10080756679657966, Acc1: 97.48%, Acc5: 99.95%
+
+--------------------------------
+Enter epoch 19
+Noise trained for 2 epochs, error: 11.0108
+Noise trained for 4 epochs, error: 9.0833
+Noise trained for 6 epochs, error: 8.4803
+Noise trained for 8 epochs, error: 8.2962
+Noise trained for 10 epochs, error: 7.4716
+Noise norm: 204.8406
+---- Validate noise effect (1st row learned noise, 2nd row permuted)
+MSE FEATS: 139.3697      MSE LOGITS: 124.0003    MSE PROBS: 0.0209       ABS MAX PROB: 0.0210    MSE MAX PROB: 0.0109    EQ CLS: 0.9799
+MSE FEATS: 244.6693      MSE LOGITS: 228.2521    MSE PROBS: 0.0399       ABS MAX PROB: 0.0327    MSE MAX PROB: 0.0205    EQ CLS: 0.9666
+---- Training model
+Step 0, Loss: 0.0, consistency_ratio: 1179023.75
+Step 20, Loss: 0.0, consistency_ratio: 2245488.75
+Step 40, Loss: 0.0, consistency_ratio: 807342.75
+Step 60, Loss: 0.0, consistency_ratio: 1662692.375
+Validation loss: 0.10175754177954889, Acc1: 97.48%, Acc5: 99.95%
+
