@@ -1,15 +1,17 @@
 """Functions for finding image-level and """
 
 import torch
-
+from torch.optim import AdamW, SGD
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from utils import encoder_forward
 import time
 
 
-def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
+def encoder_level_noise(model, loader, rounds, nlr, lim, device):
     # Todo: Some issue with making it work on a GPU
     model = model.to(device)
     model.eval()
+    model.zero_grad()
 
     #for param in model.parameters():
         #param.requires_grad = False
@@ -22,58 +24,49 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
         del_x_shape = _.shape
         print(del_x_shape)
 
-    print('lim type', lim)
-    if not isinstance(lim, str):
-        delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).to(device)
-    elif lim == 'max':
-        with torch.no_grad():
-            delta_x = patch_embed(torch.ones(1, 3, 224, 224).to(device))
-    elif lim == 'range':
-        # seems to initialize delta_x with the average over 10,000 patch embeddings
-        with torch.no_grad():
-            delta_x_range = []
-            for i in range(100):
-                sample = torch.empty(100, 3, 224, 224).uniform_(-2, 2).type(torch.FloatTensor).to(device)
-                delta_x_range.append(patch_embed(sample))
-            delta_x_range = torch.cat(delta_x_range, dim=0)
-            delta_x_max = delta_x_range.max(dim=0)[0]
-            delta_x_min = delta_x_range.min(dim=0)[0]
-            delta_x = delta_x_range.mean(dim=0).unsqueeze(0)
-        del delta_x_range
+    assert isinstance(lim, (float, int))
+    delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).to(device)
+    delta_x.requires_grad = True
 
+    optimizer = AdamW([delta_x], lr=nlr)
+    scheduler = CosineAnnealingLR(optimizer, len(loader) * rounds)
+    #optimizer = SGD([delta_x], lr=eps, momentum=0.9, weight_decay=1e-4)
+    #scheduler = StepLR(optimizer, step_size=200, gamma=0.9)
     print('Starting magnitude', delta_x.shape, (((delta_x.squeeze(0)) ** 2).sum(dim=0) ** 0.5).mean())
 
     start_time = time.time()
     for i in range(rounds):
         for _, (imgs, _) in enumerate(loader):
-            delta_x.requires_grad = True
+            assert delta_x.requires_grad == True
             imgs = imgs.to(device)
 
             with torch.no_grad():
                 og_preds = model.head(model.forward_features(imgs))
 
-            model.zero_grad()
+            #model.zero_grad()
+            optimizer.zero_grad()
 
             x = patch_embed(imgs)
             x = x + delta_x
 
             preds = model.head(encoder_forward(model, x))
             error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
+            # error_mult = ((preds - og_preds) ** 2).sum(dim=-1).mean()
             error_mult.backward()
-            grad = delta_x.grad.data
+            optimizer.step()
+            scheduler.step()
+            """grad = delta_x.grad.data
             with torch.no_grad():
-                delta_x -= eps * grad.detach()
+                delta_x -= eps * grad.detach()"""
                 # delta_x = torch.max(torch.min(delta_x, delta_x_max), delta_x_min)
                 # delta_x = torch.clamp(delta_x, min=delta_x_min, max=delta_x_max)
 
             # delta_x.grad.zero_()
 
-        if not i % 20:
-            print(i, error_mult.item())
+        if not (i + 1) % 10:
+            print(f'Noise trained for {i+1} epochs, error: {error_mult.item()}')
             if i == 200:
-                print("--- %s seconds for 100 rounds ---" % (time.time() - start_time))
-        if i in milestones:
-            eps /= 10.0
+                print("--- %s seconds for 200 rounds ---" % (time.time() - start_time))
 
     return delta_x
 
