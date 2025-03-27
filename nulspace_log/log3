@@ -1,0 +1,217 @@
+Compared to "log1", changed optimizer and scheduler to AdamW and cosine, better for Transformer model
+from now on, lr set to 3e-4
+
+---------------
+
+(hl) techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py
+cuda:0
+vit_base_patch32_224 is pretrained? True
+{'input_size': (3, 224, 224), 'interpolation': 'bicubic', 'mean': (0.5, 0.5, 0.5), 'std': (0.5, 0.5, 0.5), 'crop_pct': 0.9}
+vit_base_patch32_224, 224x224, patch_size:32
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0266, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 13.476534843444824
+Noise trained for 20 epochs, error: 8.89670181274414
+Noise trained for 30 epochs, error: 8.042269706726074
+Noise norm: 92.42416381835938
+Epoch: 0, Step: 0, Loss: 12.994019508361816, consistency_ratio: 2.7692145617729143
+MSE FEATS: 166.4010      MSE LOGITS: 158.8293    MSE PROBS: 0.0127       ABS MAX PROB: 0.0542    MSE MAX PROB: 0.0071    EQ CLS: 0.9254
+MSE FEATS: 238.0453      MSE LOGITS: 215.8018    MSE PROBS: 0.0219       ABS MAX PROB: 0.0749    MSE MAX PROB: 0.0130    EQ CLS: 0.8989
+Epoch: 0, Loss: 0.8186113911290323, Acc1: 74.29%, Acc5: 97.45%
+New Best Acc: 74.29%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0365, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 9.687232971191406
+Noise trained for 20 epochs, error: 7.929103374481201
+Noise trained for 30 epochs, error: 7.623663425445557
+Noise norm: 93.09113311767578
+Epoch: 1, Step: 0, Loss: 0.5654115676879883, consistency_ratio: 54.36098491498993
+MSE FEATS: 65.4288       MSE LOGITS: 56.4788     MSE PROBS: 0.0035       ABS MAX PROB: 0.0193    MSE MAX PROB: 0.0021    EQ CLS: 0.9801
+MSE FEATS: 121.2084      MSE LOGITS: 105.7805    MSE PROBS: 0.0083       ABS MAX PROB: 0.0306    MSE MAX PROB: 0.0050    EQ CLS: 0.9687
+Epoch: 1, Loss: 0.2353763887959142, Acc1: 92.97%, Acc5: 99.69%
+New Best Acc: 92.97%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0288, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 5.317420482635498
+Noise trained for 20 epochs, error: 3.942512035369873
+Noise trained for 30 epochs, error: 3.6872763633728027
+Noise norm: 83.2077865600586
+Epoch: 2, Step: 0, Loss: 0.04832307621836662, consistency_ratio: 148.19591944224464
+MSE FEATS: 37.0041       MSE LOGITS: 31.6103     MSE PROBS: 0.0023       ABS MAX PROB: 0.0117    MSE MAX PROB: 0.0012    EQ CLS: 0.9857
+MSE FEATS: 83.1937       MSE LOGITS: 71.8134     MSE PROBS: 0.0075       ABS MAX PROB: 0.0219    MSE MAX PROB: 0.0043    EQ CLS: 0.9781
+Epoch: 2, Loss: 0.18397943435176725, Acc1: 93.86%, Acc5: 99.64%
+New Best Acc: 93.86%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0478, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 5.1415276527404785
+Noise trained for 20 epochs, error: 3.5527703762054443
+Noise trained for 30 epochs, error: 3.44651198387146
+Noise norm: 84.057861328125
+Epoch: 3, Step: 0, Loss: 0.01551748625934124, consistency_ratio: 458.4897901145035
+MSE FEATS: 31.9092       MSE LOGITS: 27.0954     MSE PROBS: 0.0028       ABS MAX PROB: 0.0117    MSE MAX PROB: 0.0015    EQ CLS: 0.9883
+MSE FEATS: 77.2586       MSE LOGITS: 66.9862     MSE PROBS: 0.0077       ABS MAX PROB: 0.0202    MSE MAX PROB: 0.0041    EQ CLS: 0.9786
+Epoch: 3, Loss: 0.19687206514420047, Acc1: 93.55%, Acc5: 99.69%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0363, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.9891536235809326
+Noise trained for 20 epochs, error: 3.006890058517456
+Noise trained for 30 epochs, error: 2.8676652908325195
+Noise norm: 81.45603942871094
+Epoch: 4, Step: 0, Loss: 0.006985119543969631, consistency_ratio: 586.5403040453373
+MSE FEATS: 27.8790       MSE LOGITS: 23.8773     MSE PROBS: 0.0025       ABS MAX PROB: 0.0107    MSE MAX PROB: 0.0013    EQ CLS: 0.9908
+MSE FEATS: 68.0280       MSE LOGITS: 58.6222     MSE PROBS: 0.0076       ABS MAX PROB: 0.0195    MSE MAX PROB: 0.0039    EQ CLS: 0.9794
+Epoch: 4, Loss: 0.1906984544569446, Acc1: 93.81%, Acc5: 99.72%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0452, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.837294816970825
+Noise trained for 20 epochs, error: 2.9039556980133057
+Noise trained for 30 epochs, error: 2.663494110107422
+Noise norm: 81.26078033447266
+Epoch: 5, Step: 0, Loss: 0.001882412238046527, consistency_ratio: 1969.4206382661139
+MSE FEATS: 25.9126       MSE LOGITS: 22.0737     MSE PROBS: 0.0026       ABS MAX PROB: 0.0108    MSE MAX PROB: 0.0014    EQ CLS: 0.9888
+MSE FEATS: 65.6309       MSE LOGITS: 56.6668     MSE PROBS: 0.0072       ABS MAX PROB: 0.0190    MSE MAX PROB: 0.0038    EQ CLS: 0.9819
+Epoch: 5, Loss: 0.1932756208604382, Acc1: 93.94%, Acc5: 99.69%
+New Best Acc: 93.94%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0314, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.6892290115356445
+Noise trained for 20 epochs, error: 2.668360948562622
+Noise trained for 30 epochs, error: 2.4505622386932373
+Noise norm: 80.31184387207031
+Epoch: 6, Step: 0, Loss: 0.001035666442476213, consistency_ratio: 3141.8511366335083
+MSE FEATS: 23.9417       MSE LOGITS: 20.1914     MSE PROBS: 0.0024       ABS MAX PROB: 0.0100    MSE MAX PROB: 0.0013    EQ CLS: 0.9921
+MSE FEATS: 61.1278       MSE LOGITS: 52.5882     MSE PROBS: 0.0066       ABS MAX PROB: 0.0174    MSE MAX PROB: 0.0034    EQ CLS: 0.9817
+Epoch: 6, Loss: 0.19227230933404738, Acc1: 94.19%, Acc5: 99.75%
+New Best Acc: 94.19%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0409, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.703245162963867
+Noise trained for 20 epochs, error: 2.5944793224334717
+Noise trained for 30 epochs, error: 2.3819780349731445
+Noise norm: 80.54841613769531
+Epoch: 7, Step: 0, Loss: 0.0009732241742312908, consistency_ratio: 3335.665064919259
+MSE FEATS: 23.9569       MSE LOGITS: 20.3178     MSE PROBS: 0.0024       ABS MAX PROB: 0.0098    MSE MAX PROB: 0.0012    EQ CLS: 0.9916
+MSE FEATS: 59.9116       MSE LOGITS: 51.4785     MSE PROBS: 0.0073       ABS MAX PROB: 0.0178    MSE MAX PROB: 0.0038    EQ CLS: 0.9839
+Epoch: 7, Loss: 0.19218155645555066, Acc1: 94.19%, Acc5: 99.75%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0336, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.728057622909546
+Noise trained for 20 epochs, error: 2.6128580570220947
+Noise trained for 30 epochs, error: 2.4535388946533203
+Noise norm: 80.59355926513672
+Epoch: 8, Step: 0, Loss: 0.000601419887971133, consistency_ratio: 5156.429075872617
+MSE FEATS: 24.2376       MSE LOGITS: 20.5378     MSE PROBS: 0.0026       ABS MAX PROB: 0.0101    MSE MAX PROB: 0.0014    EQ CLS: 0.9911
+MSE FEATS: 60.5685       MSE LOGITS: 52.0633     MSE PROBS: 0.0087       ABS MAX PROB: 0.0183    MSE MAX PROB: 0.0044    EQ CLS: 0.9839
+Epoch: 8, Loss: 0.19406832418134135, Acc1: 94.24%, Acc5: 99.75%
+New Best Acc: 94.24%!
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0407, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.507894515991211
+Noise trained for 20 epochs, error: 2.5072379112243652
+Noise trained for 30 epochs, error: 2.3555173873901367
+Noise norm: 79.67160034179688
+Epoch: 9, Step: 0, Loss: 0.0005496666417457163, consistency_ratio: 5364.042861338738
+MSE FEATS: 23.2140       MSE LOGITS: 19.7980     MSE PROBS: 0.0028       ABS MAX PROB: 0.0103    MSE MAX PROB: 0.0015    EQ CLS: 0.9911
+MSE FEATS: 59.4896       MSE LOGITS: 51.6184     MSE PROBS: 0.0074       ABS MAX PROB: 0.0174    MSE MAX PROB: 0.0039    EQ CLS: 0.9809
+Epoch: 9, Loss: 0.19398526222475113, Acc1: 94.22%, Acc5: 99.75%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0322, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.5206656455993652
+Noise trained for 20 epochs, error: 2.579058885574341
+Noise trained for 30 epochs, error: 2.3520896434783936
+Noise norm: 80.46759033203125
+Epoch: 10, Step: 0, Loss: 0.0005130062345415354, consistency_ratio: 6207.655577947906
+MSE FEATS: 23.4622       MSE LOGITS: 19.9541     MSE PROBS: 0.0031       ABS MAX PROB: 0.0100    MSE MAX PROB: 0.0016    EQ CLS: 0.9875
+MSE FEATS: 59.3892       MSE LOGITS: 51.4913     MSE PROBS: 0.0090       ABS MAX PROB: 0.0186    MSE MAX PROB: 0.0045    EQ CLS: 0.9801
+Epoch: 10, Loss: 0.19453863943776778, Acc1: 94.24%, Acc5: 99.75%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0449, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.619743824005127
+Noise trained for 20 epochs, error: 2.4235892295837402
+Noise trained for 30 epochs, error: 2.357093334197998
+Noise norm: 79.98220825195312
+Epoch: 11, Step: 0, Loss: 0.00048384236288256943, consistency_ratio: 6027.116854791529
+MSE FEATS: 22.7139       MSE LOGITS: 19.3476     MSE PROBS: 0.0025       ABS MAX PROB: 0.0097    MSE MAX PROB: 0.0013    EQ CLS: 0.9908
+MSE FEATS: 58.9975       MSE LOGITS: 51.0488     MSE PROBS: 0.0079       ABS MAX PROB: 0.0180    MSE MAX PROB: 0.0041    EQ CLS: 0.9834
+Epoch: 11, Loss: 0.19195339756627236, Acc1: 94.19%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0430, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.6949071884155273
+Noise trained for 20 epochs, error: 2.534295082092285
+Noise trained for 30 epochs, error: 2.3783187866210938
+Noise norm: 80.64292907714844
+Epoch: 12, Step: 0, Loss: 0.00035877287155017257, consistency_ratio: 8290.269663013292
+MSE FEATS: 23.3203       MSE LOGITS: 19.8560     MSE PROBS: 0.0029       ABS MAX PROB: 0.0103    MSE MAX PROB: 0.0015    EQ CLS: 0.9888
+MSE FEATS: 60.8334       MSE LOGITS: 52.5752     MSE PROBS: 0.0077       ABS MAX PROB: 0.0177    MSE MAX PROB: 0.0040    EQ CLS: 0.9822
+Epoch: 12, Loss: 0.1939182589131017, Acc1: 94.24%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0259, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.5185153484344482
+Noise trained for 20 epochs, error: 2.441908359527588
+Noise trained for 30 epochs, error: 2.3003952503204346
+Noise norm: 78.90003967285156
+Epoch: 13, Step: 0, Loss: 0.00045683811185881495, consistency_ratio: 5637.848449361754
+MSE FEATS: 21.8944       MSE LOGITS: 18.6612     MSE PROBS: 0.0028       ABS MAX PROB: 0.0100    MSE MAX PROB: 0.0015    EQ CLS: 0.9893
+MSE FEATS: 55.1605       MSE LOGITS: 47.9811     MSE PROBS: 0.0070       ABS MAX PROB: 0.0162    MSE MAX PROB: 0.0036    EQ CLS: 0.9855
+Epoch: 13, Loss: 0.19353801973404422, Acc1: 94.24%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0268, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.6246750354766846
+Noise trained for 20 epochs, error: 2.516989231109619
+Noise trained for 30 epochs, error: 2.286635398864746
+Noise norm: 79.175048828125
+Epoch: 14, Step: 0, Loss: 0.00034182736999355257, consistency_ratio: 8087.292645386942
+MSE FEATS: 22.4869       MSE LOGITS: 19.1667     MSE PROBS: 0.0024       ABS MAX PROB: 0.0096    MSE MAX PROB: 0.0013    EQ CLS: 0.9893
+MSE FEATS: 56.7775       MSE LOGITS: 49.2876     MSE PROBS: 0.0079       ABS MAX PROB: 0.0175    MSE MAX PROB: 0.0041    EQ CLS: 0.9809
+Epoch: 14, Loss: 0.19579447469403666, Acc1: 94.24%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0330, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.497344970703125
+Noise trained for 20 epochs, error: 2.4900639057159424
+Noise trained for 30 epochs, error: 2.31089186668396
+Noise norm: 79.66608428955078
+Epoch: 15, Step: 0, Loss: 0.00037869642255827785, consistency_ratio: 7718.572663682302
+MSE FEATS: 23.0813       MSE LOGITS: 19.6928     MSE PROBS: 0.0028       ABS MAX PROB: 0.0103    MSE MAX PROB: 0.0015    EQ CLS: 0.9873
+MSE FEATS: 56.9472       MSE LOGITS: 49.3452     MSE PROBS: 0.0072       ABS MAX PROB: 0.0172    MSE MAX PROB: 0.0038    EQ CLS: 0.9857
+Epoch: 15, Loss: 0.19402357839768933, Acc1: 94.24%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0444, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.7580533027648926
+Noise trained for 20 epochs, error: 2.7053158283233643
+Noise trained for 30 epochs, error: 2.5139498710632324
+Noise norm: 82.75160217285156
+Epoch: 16, Step: 0, Loss: 0.0003539910539984703, consistency_ratio: 10014.095397089664
+MSE FEATS: 25.4710       MSE LOGITS: 21.7808     MSE PROBS: 0.0031       ABS MAX PROB: 0.0103    MSE MAX PROB: 0.0017    EQ CLS: 0.9908
+MSE FEATS: 61.9952       MSE LOGITS: 53.9457     MSE PROBS: 0.0095       ABS MAX PROB: 0.0197    MSE MAX PROB: 0.0049    EQ CLS: 0.9778
+Epoch: 16, Loss: 0.19397898643247544, Acc1: 94.24%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0284, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.5808229446411133
+Noise trained for 20 epochs, error: 2.537294626235962
+Noise trained for 30 epochs, error: 2.358813762664795
+Noise norm: 80.64757537841797
+Epoch: 17, Step: 0, Loss: 0.0003145481168758124, consistency_ratio: 9907.76657382306
+MSE FEATS: 24.2343       MSE LOGITS: 20.6653     MSE PROBS: 0.0026       ABS MAX PROB: 0.0098    MSE MAX PROB: 0.0014    EQ CLS: 0.9911
+MSE FEATS: 60.6713       MSE LOGITS: 53.2083     MSE PROBS: 0.0096       ABS MAX PROB: 0.0193    MSE MAX PROB: 0.0049    EQ CLS: 0.9801
+Epoch: 17, Loss: 0.19325980832499842, Acc1: 94.24%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0315, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.626187801361084
+Noise trained for 20 epochs, error: 2.3771097660064697
+Noise trained for 30 epochs, error: 2.3990910053253174
+Noise norm: 79.61175537109375
+Epoch: 18, Step: 0, Loss: 0.0002930076443590224, consistency_ratio: 9646.913195254318
+MSE FEATS: 23.0136       MSE LOGITS: 19.6766     MSE PROBS: 0.0026       ABS MAX PROB: 0.0100    MSE MAX PROB: 0.0014    EQ CLS: 0.9901
+MSE FEATS: 57.4011       MSE LOGITS: 49.6934     MSE PROBS: 0.0072       ABS MAX PROB: 0.0171    MSE MAX PROB: 0.0038    EQ CLS: 0.9857
+Epoch: 18, Loss: 0.19322952147453062, Acc1: 94.24%, Acc5: 99.77%
+torch.Size([1, 49, 768])
+Starting magnitude torch.Size([1, 49, 768]) tensor(4.0179, device='cuda:0', grad_fn=<MeanBackward0>)
+Noise trained for 10 epochs, error: 3.5026962757110596
+Noise trained for 20 epochs, error: 2.4329733848571777
+Noise trained for 30 epochs, error: 2.327094793319702
+Noise norm: 79.81349182128906
+Epoch: 19, Step: 0, Loss: 0.00033291755244135857, consistency_ratio: 8675.323922707357
+MSE FEATS: 23.0682       MSE LOGITS: 19.7325     MSE PROBS: 0.0025       ABS MAX PROB: 0.0095    MSE MAX PROB: 0.0013    EQ CLS: 0.9911
+MSE FEATS: 60.4899       MSE LOGITS: 52.5830     MSE PROBS: 0.0088       ABS MAX PROB: 0.0188    MSE MAX PROB: 0.0045    EQ CLS: 0.9809
+Epoch: 19, Loss: 0.19258351479807206, Acc1: 94.24%, Acc5: 99.77%
+
