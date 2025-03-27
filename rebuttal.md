@@ -90,7 +90,11 @@ We highlight ViTs are the foundation versions of the much complex architectures 
 
 > Figure 2 references epsilon on the x-axis, but epsilon is not defined in the optimization in equation 6.
 
+We apologise for the confusion. $\epsilon$ is introduced later on in equation (7), consequently, we have shifted this ablation discussion to section 5.
+
 > “as the epsilon criteria becomes smaller, the learnt noise becomes better and better” Is this conclusion based on the % of matching predictions? ...
+
+This is based on both the metrics reported in the plot (1) matching predictions and (2) Mean-squared error of the confidence values of ground-truth categories.
 
 > Our preliminary experiments indicate that there may exist a non-isomorphic space in the input space ...
 
@@ -103,6 +107,8 @@ We highlight ViTs are the foundation versions of the much complex architectures 
 > This paper shows training with https://arxiv.org/abs/1808.08750 augmenting salt-and-pepper ...
 
 > The application to model patenting is not clear to me at all ...
+
+The model patenting references to the exact nullspace noise which is derived from the linear patch embedding layer of the ViTs. It is true that nullspace noise might not be unique to a particular instance of the model, however, by generating a large number of such noise samples we can confidently pursue any violations. Cases where exact nullspace is not a viable solution, we can employ approximated noise in a similar fashion of synthesizing many samples and performing verificaiton.
 
 > I’m not sure what insight this work sheds in terms of how transformer models are robust to input perturbations ...
 
