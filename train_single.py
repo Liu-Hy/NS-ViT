@@ -115,12 +115,12 @@ def main():
     print(device)
     # 超参数设置
     epochs = 5
-    train_batch_size = 64  # 256 for base model
-    val_batch_size = 128
+    train_batch_size = 40  # 256 for base model
+    val_batch_size = 80
     lr = 1e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
     rounds, nlr, lim = 3, 0.02, 1  # lim=3, nlr=0.1 # round=3
     eps = 0.001  # 0.001
-    adv = False
+    adv = True
     img_ratio = 0.1 # 0.02
     train_ratio = 1.
     val_ratio = 1.
@@ -181,9 +181,9 @@ def main():
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
-    # val_dataset = datasets.ImageFolder(data_path.joinpath('val'), val_transform)
-    # val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size, shuffle=True, num_workers=16,
-    # pin_memory=True)
+    val_dataset = ImageFolder(data_path.joinpath('imagenet/val'), info_path, val_transform)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size, shuffle=False, num_workers=16,
+    pin_memory=True)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
@@ -222,19 +222,9 @@ def main():
         result = dict()
         # Evaluate on held-out set
         dev_acc, _ = validate(dev_loader, model, criterion, val_ratio)
-        # Evaluate on val and OOD datasets except imagenet-c
-        for split in SPLITS:
-            if split != "train" and not split.startswith("c-"):
-                if split == "val":
-                    typ_path = data_path.joinpath("imagenet", split)
-                else:
-                    typ_path = data_path.joinpath(split)
-                val_loader = prepare_loader(typ_path, info_path, val_batch_size, val_transform)
-                acc, _ = validate(val_loader, model, criterion, val_ratio)
-                result[split] = acc
-        # Evaluate on imagenet-c
-        corruption_rs = validate_corruption(data_path.joinpath("corruption"), info_path, model, val_transform, criterion, val_batch_size, val_ratio)
-        result["corruption"] = corruption_rs["mce"]
+        # Evaluate on val set
+        val_acc, _ = validate(val_loader, model, criterion, val_ratio)
+        result["val"] = val_acc
         # 保存
         print(f"Dev acc: {dev_acc}")
         total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])

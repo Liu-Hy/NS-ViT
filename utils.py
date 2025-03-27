@@ -246,6 +246,9 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
             # hinge = torch.max(torch.stack([error_mult - eps, torch.tensor(0)]))
             error_mult.backward()
             if isinstance(model, DistributedDataParallel):
+                #dist.barrier()
+                print("Gradient shape: ", delta_x.grad.shape)
+                dist.barrier()
                 dist.all_reduce(delta_x.grad)
                 delta_x.grad /= dist.get_world_size()
                 #print(f"Delta_x.grad after reduction: {delta_x.grad}")
