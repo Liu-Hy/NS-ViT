@@ -10,6 +10,8 @@ import torchvision.transforms as trn
 import torch.utils.data as data
 import numpy as np
 
+from PIL import Image
+
 # /////////////// Data Loader ///////////////
 
 
@@ -36,18 +38,23 @@ def find_classes(dir):
 
 def make_dataset(dir, class_to_idx):
     images = []
-    dir = os.path.expanduser(dir)
+    # dir = os.path.expanduser(dir)
     for target in sorted(os.listdir(dir)):
         d = os.path.join(dir, target)
         if not os.path.isdir(d):
             continue
 
-        for root, _, fnames in sorted(os.walk(d)):
+        """for root, _, fnames in sorted(os.walk(d)):
             for fname in sorted(fnames):
                 if is_image_file(fname):
                     path = os.path.join(root, fname)
                     item = (path, class_to_idx[target])
-                    images.append(item)
+                    images.append(item)"""
+        for fname in sorted(os.listdir(d)):
+            path = os.path.join(d, fname)
+            item = (path, class_to_idx[target])
+            images.append(item)
+
 
     return images
 
@@ -79,8 +86,8 @@ def default_loader(path):
 class DistortImageFolder(data.Dataset):
     def __init__(self, root, method, severity, transform=None, target_transform=None,
                  loader=default_loader):
-        classes, class_to_idx = find_classes(root)
-        imgs = make_dataset(root, class_to_idx)
+        classes, class_to_idx = find_classes(os.path.join(root, "clean"))
+        imgs = make_dataset(os.path.join(root, "clean"), class_to_idx)
         if len(imgs) == 0:
             raise (RuntimeError("Found 0 images in subfolders of: " + root + "\n"
                                                                              "Supported image extensions are: " + ",".join(
@@ -99,21 +106,22 @@ class DistortImageFolder(data.Dataset):
 
     def __getitem__(self, index):
         path, target = self.imgs[index]
+        #print(path)
         img = self.loader(path)
         if self.transform is not None:
             img = self.transform(img)
-            img = self.method(img, self.severity)
+        img = self.method(img, self.severity)
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        save_path = '/share/data/vision-greg/DistortedImageNet/JPEG/' + self.method.__name__ + \
+        save_path = self.root + self.method.__name__ + \
                     '/' + str(self.severity) + '/' + self.idx_to_class[target]
 
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
         save_path += path[path.rindex('/'):]
-
+        #print(save_path)
         Image.fromarray(np.uint8(img)).save(save_path, quality=85, optimize=True)
 
         return 0  # we do not care about returning the data
@@ -392,7 +400,7 @@ def frost(x, severity=1):
          (0.65, 0.7),
          (0.6, 0.75)][severity - 1]
     idx = np.random.randint(5)
-    filename = ['frost/frost1.png', 'frost/frost2.png', 'frost/frost3.png', 'frost/frost4.jpg', 'frost/frost5.jpg', 'frost/frost6.jpg'][idx]
+    filename = ['./frost1.png', './frost2.png', './frost3.png', './frost4.jpg', './frost5.jpg', './frost6.jpg'][idx]
     frost = cv2.imread(filename)
     # randomly crop and convert to rgb
     x_start, y_start = np.random.randint(0, frost.shape[0] - 224), np.random.randint(0, frost.shape[1] - 224)
@@ -571,14 +579,15 @@ def elastic_transform(image, severity=1):
 
 # /////////////// Further Setup ///////////////
 
-
+root = "../../../../data/val/"
 def save_distorted(method=gaussian_noise):
     for severity in range(1, 6):
         print(method.__name__, severity)
         distorted_dataset = DistortImageFolder(
-            root="/share/data/vision-greg/ImageNet/clsloc/images/val",
+            root=root,
             method=method, severity=severity,
-            transform=trn.Compose([trn.Resize(256), trn.CenterCrop(224)]))
+            transform=trn.Resize((224, 224))) # why not 224, 224
+            #transform=trn.Compose([trn.Resize(256), trn.CenterCrop(224)])) # For consistent comparison
         distorted_dataset_loader = torch.utils.data.DataLoader(
             distorted_dataset, batch_size=100, shuffle=False, num_workers=4)
 
@@ -615,5 +624,6 @@ d['Gaussian Blur'] = gaussian_blur
 d['Spatter'] = spatter
 d['Saturate'] = saturate
 
-for method_name in d.keys():
-    save_distorted(d[method_name])
+if __name__ == '__main__':
+    for method_name in d.keys():
+        save_distorted(d[method_name])
