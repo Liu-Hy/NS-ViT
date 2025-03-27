@@ -1,3 +1,6 @@
+"""For each sampling limit, load the ns noise trained on vit_small network, and test it on the validation set using
+different networks, to see how the ns noise transfer across architectures. """
+
 import os
 import torch
 import torchvision.transforms as transforms
@@ -36,7 +39,7 @@ def main():
             norm = transforms.Normalize(model_config['mean'], model_config['std'])
             tf = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor(), norm])
             apply_norm = lambda x: norm(x).unsqueeze(0)
-            mnoise = apply_norm(nullnoise)
+            mnoise = apply_norm(nullnoise)  # 和cross-main里的不一样了。那里是先加噪音再normalize, 这里是分别normalize再相加
 
             val_dataset = datasets.ImageFolder(os.path.join(data_dir, 'val'), tf)
             val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=128, shuffle=True, num_workers=32,

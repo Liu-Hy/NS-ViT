@@ -1,9 +1,14 @@
+"""Fetch an image with ns noise, process it to get the ns noise, and test its agreement with the predictions on the
+original images by 4 models. As comparison, shuffle the noise to see the agreement.
+
+"""
+
 import os
 import torch
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from utils import get_model_and_config, validate_by_parts
-from methods import  compute_encoder_ns_v1
+from methods import compute_encoder_ns_v1
 import fire
 import requests
 from PIL import Image
@@ -24,6 +29,7 @@ def main():
     nullnoise = torch.load('vit_small_patch32_224.robust.patch')[0]['max'] 
     unnorm = lambda x, c, i: c['mean'][i]+x*c['std'][i]
     _, _, _, config = get_model_and_config('vit_small_patch32_224', pretrained=True)
+    # where is the "sc" in code?
     nullnoise = torch.cat([unnorm(nullnoise[0], sc, 0).unsqueeze(0), unnorm(nullnoise, sc, 1).unsqueeze(0),
                             unnorm(nullnoise[2], sc, 2).unsqueeze(0)], dim=0) - tf(base_img) 
     idx = torch.randperm(nullnoise.nelement())
@@ -44,7 +50,7 @@ def main():
         for _, (imgs, _) in enumerate(val_loader):
             with torch.no_grad():
                 ns_imgs = map(apply_norm)(imgs + nullnoise)
-                ns_imgs = og_imgs.to(device)
+                ns_imgs = og_imgs.to(device)  # ns_imgs?
                 perm_imgs = map(apply_norm)(imgs + perm_noise)
                 perm_imgs = perm_imgs.to(device)
                 imgs = map(apply_norm)(imgs)
@@ -60,7 +66,7 @@ def main():
                 t += imgs.shape[0]
         results[model_name] = {'corr': c/t, 'shuffle': inc/t}
         print(model_name, results[model_name])
-    torch.save('outputs/cross_robustness.nullspace')
+    torch.save('outputs/cross_robustness.nullspace')  # What is saved to this path?
 
                 
                

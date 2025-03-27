@@ -3,7 +3,7 @@ import torch
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from utils import get_model_and_config, validate_by_parts
-from methods import  encoder_level_noise
+from methods import encoder_level_noise
 import fire
 
 
