@@ -71,7 +71,7 @@ def validate(dataloader, model, criterion, epoch):
     loss_val = loss.item() / len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
     acc5 = 100 * correct5.item() / total.item()
-    print(f'Validation loss: {loss_val}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
+    print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
 
     return correct1.item() / total.item()
 
@@ -82,12 +82,14 @@ def main():
     print(device)
     # 超参数设置
     epochs = 20
-    train_batch_size = 128 # 256
+    train_batch_size = 128  # 256 for base model
     val_batch_size = 128
     lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    save_path = 'output/vit'
+    rounds, nlr, lim = 30, 0.03, 7  # lim=1.0, nlr=0.02
+    eps = 1e-4  # 0.001
+    save_path = Path('./output')
     data_dir = "./data"
-    Path(save_path).mkdir(exist_ok=True, parents=True)
+    save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
     # model = models.resnet50().cuda()
@@ -95,6 +97,14 @@ def main():
     model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=True)
     model.cuda()
 
+    m = model_name.split('_')[1]
+    setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_nlr{nlr}_rounds{rounds}_lim{lim}_eps{eps}'
+    setting_path = save_path.joinpath(setting)
+    setting_path.mkdir(exist_ok=True, parents=True)
+    noise_path = setting_path.joinpath("noise")
+    noise_path.mkdir(exist_ok=True, parents=True)
+    model_path = setting_path.joinpath("model")
+    model_path.mkdir(exist_ok=True, parents=True)
     """train_transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
@@ -115,9 +125,9 @@ def main():
     indices = torch.randperm(train_size)[:int(0.1 * train_size)]
     img_sampler = SubsetRandomSampler(indices)
     img_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=img_sampler,
-                                               num_workers=16, pin_memory=True)  #batch_size=256 for base model
+                                               num_workers=16, pin_memory=True)
     train_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, shuffle=True,
-                                             num_workers=16, pin_memory=True)  #batch_size=256 for base model
+                                             num_workers=16, pin_memory=True)
 
     """val_transform = transforms.Compose([
         transforms.Resize(256),
@@ -140,36 +150,49 @@ def main():
     # optimizer = SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-4)
     # scheduler = StepLR(optimizer, step_size=30, gamma=0.9)
 
-    ckpt_path = os.path.join(save_path, 'latest.pt')
     best_acc = 0
 
     # 训练、验证
-    for epoch in range(0, epochs):
-        # generate noise
-        rounds, nlr, lim = 30, 0.03, 7  #lim=1.0, nlr=0.02
-        eps = 1e-4 #0.001
+    start_epoch = len(list(model_path.iterdir()))
+    if start_epoch > 0:
+        print(f"Restore training from epoch {start_epoch}")
+        checkpoint = torch.load(model_path.joinpath(str(start_epoch-1)))
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+
+    for epoch in range(start_epoch, epochs):
         print("\n" + "-" * 32 + f"\nEnter epoch {epoch}")
         # delta_x = encoder_level_noise(model, img_loader, rounds, nlr, lim=lim, device=device)
-        delta_x = encoder_level_epsilon_noise(model, img_loader, rounds, nlr, lim, eps, device)
+        if Path.exists(noise_path.joinpath(str(epoch))):
+            print(f"Loading learned noise at epoch {epoch}")
+            delta_x = torch.load(noise_path.joinpath(str(epoch)))['delta_x'].to(device)
+        else:
+            delta_x = encoder_level_epsilon_noise(model, img_loader, rounds, nlr, lim, eps, device)
+            torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
         print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
-        # resume from epoch and step
-        # train_datasampler.set_epoch(epoch)
-        # train_dataloader.set_step(start_step)
+
         print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
         corr_res = validate_by_parts(model, val_loader, delta_x, device)
         idx = torch.randperm(delta_x.nelement())
         t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
         incorr_res = validate_by_parts(model, val_loader, t, device)
+
         print("---- Training model")
         adv_train(train_loader, delta_x, model, criterion, optimizer, scheduler, epoch)
         start_step = 0  # reset
         acc = validate(val_loader, model, criterion, epoch)
+        torch.save({"model_name": model_name, "epoch": epoch,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "scheduler_state_dict": scheduler.state_dict(),
+                    "pure_acc": acc}, model_path.joinpath(str(epoch)))
         # 保存
         if acc > best_acc:
             best_acc = acc
             print(f'New Best Acc: {100 * acc:.2f}%')
-            torch.save(model.state_dict(),
-                       os.path.join(save_path, 'best.pt'))
+            torch.save({"best_epoch": epoch, "best_acc": acc},
+                       setting_path.joinpath("best_epoch"))
 
 
 if __name__ == '__main__':
