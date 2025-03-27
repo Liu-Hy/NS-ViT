@@ -36,6 +36,7 @@ def train(dataloader, model, criterion, optimizer, scheduler, epoch):
 def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
     model.train()
     iterator = tqdm(dataloader)
+    epoch_loss = 0.
     for step, batch in enumerate(iterator):
         imgs, labels = [x.cuda(non_blocking=True) for x in batch]
         optimizer.zero_grad()
@@ -49,20 +50,21 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
             adv_loss = criterion(adv_outputs, labels)
             # adv_loss.backward()
             consistency = ((adv_outputs - outputs) ** 2).sum(dim=-1).mean()
-            tot_loss = loss + adv_loss  # + consistency
-            tot_loss.backward()
-        else:
-            loss.backward()
+            #tot_loss = loss + adv_loss  # + consistency
+            loss = loss + adv_loss  # + consistency
+        loss.backward()
         optimizer.step()
         scheduler.step()
-        if step % 20 == 0:
+        """if step % 20 == 0:
             if adv:
                 print(
                     f'Step {step}, Loss: {round(loss.item(), 4)}, consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
                     flush=True)
             else:
                 print(
-                    f'Step {step}, Loss: {round(loss.item(), 4)}', flush=True)
+                    f'Step {step}, Loss: {round(loss.item(), 4)}', flush=True)"""
+        epoch_loss += loss.item()
+        iterator.set_postfix({"loss": round((epoch_loss / (step + 2)), 3)})
 
 
 def validate(data_path, model, criterion, transform, batch_size, val_ratio, is_clean=False):
@@ -108,12 +110,12 @@ def validate_all(data_path, model, criterion, transform, batch_size, delta_x, va
     result = {"mce": 1.}
     # for type_path in sorted(data_path.iterdir()):
     clean_path = data_path.joinpath("imagenet/val")
-    if delta_x is not None:
+    """if delta_x is not None:
         print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
         corr_res = validate_encoder_noise(model, clean_path, transform, batch_size, delta_x, val_ratio, device)
         idx = torch.randperm(delta_x.nelement())
         t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
-        incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)
+        incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)"""
     clean_e, _ = validate(clean_path, model, criterion, transform, batch_size, val_ratio, is_clean=True)
     for typ in tqdm(corruptions):
         type_path = data_path.joinpath(f"imagenet-c/{typ}")
@@ -143,14 +145,14 @@ def main():
     print(device)
     # 超参数设置
     epochs = 10
-    train_batch_size = 128  # 256 for base model
+    train_batch_size = 64  # 256 for base model
     val_batch_size = 128
     lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    rounds, nlr, lim = 30, 0.01, 4  # lim=1.0, nlr=0.02
+    rounds, nlr, lim = 1, 0.1, 3  # lim=1.0, nlr=0.02
     eps = 0.01  # 0.001
-    adv = False
+    adv = True
     img_ratio = 0.05
-    train_ratio = 0.1
+    train_ratio = 0.05
     val_ratio = 0.01
     task = "imagenet"  # "imagenette"
     save_path = Path("./output").joinpath(task)
@@ -247,6 +249,7 @@ def main():
                 print(f"Loading learned noise at epoch {epoch}")
                 delta_x = torch.load(noise_path.joinpath(str(epoch)))['delta_x'].to(device)
             else:
+                print("---- Learning noise")
                 delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, device)
                 torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
@@ -258,7 +261,7 @@ def main():
         incorr_res = validate_by_parts(model, val_loader, t, device)"""
 
         print("---- Training model")
-        # adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x)
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x)
         # acc = validate(val_loader, model, criterion, epoch)
         print("---- Validating model")
         rs = validate_all(data_path, model, criterion, val_transform, val_batch_size, delta_x, val_ratio, device)

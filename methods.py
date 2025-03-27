@@ -5,6 +5,7 @@ from torch.optim import AdamW, SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from utils import encoder_forward
 import time
+from tqdm import tqdm
 
 
 def encoder_level_noise(model, loader, img_size, rounds, nlr, lim, device):
@@ -34,8 +35,8 @@ def encoder_level_noise(model, loader, img_size, rounds, nlr, lim, device):
     #scheduler = StepLR(optimizer, step_size=200, gamma=0.9)
     #print('Starting magnitude', delta_x.shape, (((delta_x.squeeze(0)) ** 2).sum(dim=0) ** 0.5).mean())
 
-    start_time = time.time()
-    for i in range(rounds):
+    iterator = tqdm(range(rounds))
+    for i in iterator:
         for _, (imgs, _) in enumerate(loader):
             assert delta_x.requires_grad == True
             imgs = imgs.to(device)
@@ -63,10 +64,9 @@ def encoder_level_noise(model, loader, img_size, rounds, nlr, lim, device):
 
             # delta_x.grad.zero_()
 
-        if not (i + 1) % 2:
-            print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}')
-            if i == 200:
-                print("--- %s seconds for 200 rounds ---" % (time.time() - start_time))
+        iterator.set_postfix({"error": round(error_mult.item(), 4)})
+        #if not (i + 1) % 2:
+            #print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}')
 
     return delta_x
 
@@ -99,8 +99,10 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     #scheduler = StepLR(optimizer, step_size=200, gamma=0.9)
     #print('Starting magnitude', delta_x.shape, (((delta_x.squeeze(0)) ** 2).sum(dim=0) ** 0.5).mean())
 
+    #iterator = tqdm(range(rounds))
     for i in range(rounds):
-        for st, (imgs, _) in enumerate(loader):
+        iterator = tqdm(loader)
+        for st, (imgs, _) in enumerate(iterator):
             assert delta_x.requires_grad == True
             imgs = imgs.to(device)
 
@@ -136,7 +138,8 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
                 # delta_x = torch.clamp(delta_x, min=delta_x_min, max=delta_x_max)
 
             # delta_x.grad.zero_()
-        if not (i + 1) % 2:
+            iterator.set_postfix({"error": round(error_mult.item(), 4)})
+        if not (i + 1) % 1:
             print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}')
 
     return delta_x
