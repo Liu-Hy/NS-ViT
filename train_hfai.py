@@ -1,4 +1,4 @@
-"""Distributed version to run on the server"""
+"""Script to run on the HFAI server"""
 import hfai_env
 hfai_env.set_env('202111')
 
@@ -23,11 +23,12 @@ from ffrecord.torch import DataLoader
 dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
 hfai.nn.functional.set_replace_torch()
 
-def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, epoch, local_rank, start_step, best_acc):
+def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc):
     model.train()
     for step, batch in enumerate(dataloader):
         step += start_step
-
+        if step > int(train_ratio * len(dataloader)):
+            break
         imgs, labels = [x.cuda(non_blocking=True) for x in batch]
         optimizer.zero_grad()
         outputs = model(imgs)
@@ -35,7 +36,7 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         loss = criterion(outputs, labels)
         if adv:
             x = model.module.patch_embed(imgs)
-            x = x + delta_x
+            x = x + delta_x.cuda(non_blocking=True)
             adv_outputs = model.module.head(encoder_forward(model, x))
             adv_loss = criterion(adv_outputs, labels)
             # adv_loss.backward()
@@ -56,13 +57,12 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
             model.try_save(epoch, step + 1, others=(best_acc, delta_x), force=True)
 
 
-def validate(dataloader, model, criterion, val_ratio, epoch, local_rank):
+def validate(dataloader, model, criterion, val_ratio):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
     with torch.no_grad():
         for step, batch in enumerate(dataloader):
-            if step > int(val_ratio * len(dataloader)) - 1:
-                print(f"Break evaluation at step {step}")
+            if step > int(val_ratio * len(dataloader)):
                 break
             samples, labels = [x.cuda(non_blocking=True) for x in batch]
             # print(labels.shape, labels.max(), labels.min())
@@ -87,7 +87,7 @@ def validate(dataloader, model, criterion, val_ratio, epoch, local_rank):
     return acc1, loss_val
 
 
-def validate_corruption(model, transform, criterion, batch_size, val_ratio, epoch, local_rank):
+def validate_corruption(model, transform, criterion, batch_size, val_ratio):
     result = dict()
     type_errors = []
     for typ in CORRUPTIONS:
@@ -95,7 +95,7 @@ def validate_corruption(model, transform, criterion, batch_size, val_ratio, epoc
         for s in range(1, 6):
             split = "c-" + typ + "-" + str(s)
             loader = prepare_loader(split, batch_size, transform)
-            acc, _ = validate(loader, model, criterion, val_ratio, epoch, local_rank)
+            acc, _ = validate(loader, model, criterion, val_ratio)
             errors.append(100 - acc)
         type_errors.append(get_mean(errors))
     me = get_mean(type_errors)
@@ -111,14 +111,11 @@ def validate_corruption(model, transform, criterion, batch_size, val_ratio, epoc
 def prepare_loader(split_data, batch_size, transform=None):
     if isinstance(split_data, str):
         split_data = ImageNetDG(split_data, transform=transform)
-    #else:
-        #assert isinstance(split_data, ImageNetDG)
     data_sampler = DistributedSampler(split_data)
     data_loader = DataLoader(split_data, batch_size=batch_size, sampler=data_sampler, num_workers=4, pin_memory=True)
     return data_loader
 
 def main(local_rank):
-    #empty_gpu()
     # 超参数设置
     epochs = 10
     train_batch_size = 64  # 256 for base model
@@ -163,7 +160,6 @@ def main(local_rank):
 
     held_out = 0.1
     data_set = ImageNetDG('train', transform=train_transform)
-    #train_set, dev_set = torch.utils.data.random_split(data_set, (1 - held_out, held_out))
     len_dev = int(held_out * len(data_set))
     len_train = len(data_set) - len_dev
     train_set, dev_set = torch.utils.data.random_split(data_set, (len_train, len_dev))
@@ -174,7 +170,8 @@ def main(local_rank):
 
     dev_loader = prepare_loader(dev_set, val_batch_size)
     #print(type(train_loader), type(dev_loader))
-    img_loader = train_loader
+    img_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4,
+                              pin_memory=True)
 
     val_transform = transforms.Compose([
         transforms.Resize(256),
@@ -203,22 +200,21 @@ def main(local_rank):
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
         print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, epoch, local_rank, start_step, best_acc)
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc)
         start_step = 0
         delta_x = None
         print("---- Validating model")
         result = dict()
         # Evaluate on held-out set
-        dev_acc, _ = validate(dev_loader, model, criterion, 1, epoch, local_rank)
-        # TODO: incorporate dev_acc
+        dev_acc, _ = validate(dev_loader, model, criterion, 1)
         # Evaluate on val and OOD datasets except imagenet-c
         for split in SPLITS:
             if split != "train" and not split.startswith("c-"):
                 val_loader = prepare_loader(split, val_batch_size, val_transform)
-                acc, _ = validate(val_loader, model, criterion, 1, epoch, local_rank)
+                acc, _ = validate(val_loader, model, criterion, 1)
                 result[split] = acc
         # Evaluate on imagenet-c
-        corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, val_ratio, epoch, local_rank)
+        corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, val_ratio)
         result["corruption"] = corruption_rs["mce"]
         # 保存
         if rank == 0 and local_rank == 0:

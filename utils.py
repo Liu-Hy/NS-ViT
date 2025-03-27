@@ -3,13 +3,16 @@ import os
 
 import timm
 import torch
+from torch import nn
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch.nn.parallel import DistributedDataParallel
+import torch.distributed as dist
 #import wandb
 from dotenv import load_dotenv
 from timm.data import resolve_data_config
 from torch.utils.data import SubsetRandomSampler
+from torch.utils import model_zoo
 
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -90,9 +93,27 @@ def init_dataset(args, model_config):
 def get_mean(l):
     return sum(l) / len(l)
 
-def get_model_and_config(model_name, pretrained=True):
-    print(f'{model_name} pretrained: {pretrained}')
+def get_model_and_config(model_name, variant=None):
+    pretrained = (variant is None)
+    print(f'{model_name}')
     model = timm.create_model(model_name, pretrained=pretrained)
+    if variant is not None:
+        if variant == "DAT":
+            ckpt = model_zoo.load_url("http://alisec-competition.oss-cn-shanghai.aliyuncs.com/xiaofeng/easy_robust/benchmark_models/ours/examples/dat/model_best.pth.tar")
+            if 'state_dict' in ckpt.keys():
+                state_dict = ckpt['state_dict']
+            else:
+                state_dict = ckpt
+            if '0.mean' in state_dict.keys() and '0.std' in state_dict.keys():
+                st_dict = dict()
+                for k, v in state_dict.items():
+                    if k.startswith("1."):
+                        st_dict[k[2:]] = v
+                model.load_state_dict(st_dict)
+            else:
+                model.load_state_dict(ckpt)
+        else:
+            raise NotImplementedError
     config = resolve_data_config({}, model=model)
     print(config)
     try:
@@ -171,6 +192,9 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
         del_x_shape = _.shape
 
     delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).cuda(non_blocking=True)
+    if isinstance(model, DistributedDataParallel):
+        dist.broadcast(delta_x, 0)
+    # TODO: when called by hfai script, should it use hfai.distributed.broadcast instead?
     delta_x.requires_grad = True
     print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}", flush=True)
 
@@ -206,6 +230,9 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
             # error_mult = ((preds - og_preds) ** 2).sum(dim=-1).mean()
             # hinge = torch.max(torch.stack([error_mult - eps, torch.tensor(0)]))
             error_mult.backward()
+            if isinstance(model, DistributedDataParallel):
+                dist.all_reduce(delta_x.grad)
+                delta_x.grad /= dist.get_world_size()
             optimizer.step()
             scheduler.step()
             iterator.set_postfix({"error": round(error_mult.item(), 4)})

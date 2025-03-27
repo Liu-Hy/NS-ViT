@@ -23,5 +23,6 @@ export MASTER_ADDR=$master_addr
 echo "MASTER_ADDR="$MASTER_ADDR
 
 module load opence
+conda activate ns
 
 python train_hal.py

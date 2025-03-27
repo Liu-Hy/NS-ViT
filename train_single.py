@@ -21,7 +21,7 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
     iterator = tqdm(dataloader, position=0, leave=True)
     epoch_loss = 0.
     for step, batch in enumerate(iterator):
-        if step > int(train_ratio * len(dataloader)) - 1:
+        if step > int(train_ratio * len(dataloader)):
             break
         imgs, labels = [x.cuda(non_blocking=True) for x in batch]
         optimizer.zero_grad()
@@ -42,7 +42,7 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         """if step % 20 == 0:
             if adv:
                 print(
-                    f'Step {step}, Loss: {round(loss.item(), 4)}, consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
+                    f'Step {step}, Loss: {round(loss.item(), 4)}, Consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
                     flush=True)
             else:
                 print(
@@ -54,14 +54,6 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
 def validate(dataloader, model, criterion, val_ratio):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
-    """val_dataset = datasets.ImageFolder(data_path, transform)
-
-    val_size = len(val_dataset)
-    indices = torch.randperm(val_size)[:int(val_ratio * val_size)]
-    val_sampler = SubsetRandomSampler(indices)
-
-    dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, sampler=val_sampler, num_workers=16,
-                                             pin_memory=True)"""
     with torch.no_grad():
         for step, batch in enumerate(dataloader):
             if step > int(val_ratio * len(dataloader)):
@@ -87,8 +79,8 @@ def validate(dataloader, model, criterion, val_ratio):
 
 
 def validate_corruption(data_path, info_path, model, transform, criterion, batch_size, val_ratio):
+    result = dict()
     type_errors = []
-    result = {"mce": 1.}
     for typ in tqdm(CORRUPTIONS, position=0, leave=True):
         type_path = data_path.joinpath(typ)
         assert type_path in list(data_path.iterdir())
@@ -123,13 +115,13 @@ def main():
     print(device)
     # 超参数设置
     epochs = 5
-    train_batch_size = 128  # 256 for base model
+    train_batch_size = 64  # 256 for base model
     val_batch_size = 128
-    lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    rounds, nlr, lim = 3, 0.02, 1  # lim=3, nlr=0.1
+    lr = 1e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
+    rounds, nlr, lim = 3, 0.02, 1  # lim=3, nlr=0.1 # round=3
     eps = 0.001  # 0.001
     adv = True
-    img_ratio = 0.02
+    img_ratio = 0.02 # 0.02
     train_ratio = 0.1
     val_ratio = 0.05
     task = "imagenet"  # "imagenette"
@@ -138,18 +130,18 @@ def main():
     save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch32_224'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=True)
+    model_name = 'vit_base_patch16_224'
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant="DAT")
     model.cuda()
 
     m = model_name.split('_')[1]
     setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}' + \
               f'_lim{lim}_eps{eps}_imgr{img_ratio}_trainr{train_ratio}_valr{val_ratio}'
     setting_path = save_path.joinpath(setting)
-    setting_path.mkdir(exist_ok=True, parents=True)
     noise_path = setting_path.joinpath("noise")
-    noise_path.mkdir(exist_ok=True, parents=True)
     model_path = setting_path.joinpath("model")
+    setting_path.mkdir(exist_ok=True, parents=True)
+    noise_path.mkdir(exist_ok=True, parents=True)
     model_path.mkdir(exist_ok=True, parents=True)
 
     train_transform = transforms.Compose([
@@ -168,7 +160,7 @@ def main():
     train_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=4, pin_memory=True)
     img_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=4,
                               pin_memory=True)
-    dev_loader = prepare_loader(dev_set, info_path, val_batch_size, train_transform)
+    dev_loader = prepare_loader(dev_set, info_path, val_batch_size)
 
     """base_dataset = datasets.ImageFolder(data_path.joinpath('imagenet/train'), train_transform)
     img_indices = torch.randperm(train_size)[:int(img_ratio * train_size)]

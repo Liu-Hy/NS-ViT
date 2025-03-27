@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 
 #from .vision import VisionDataset
-from torchvision.datasets.vision import VisionDataset
+from vision import VisionDataset
 
 
 def has_file_allowed_extension(filename: str, extensions: Union[str, Tuple[str, ...]]) -> bool:
