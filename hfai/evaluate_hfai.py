@@ -87,13 +87,19 @@ def main(local_rank, args):
     # Evaluate on val and OOD datasets except imagenet-c
     for split in SPLITS:
         if split != "train" and not split.startswith("c-"):
+            if split == "adversarial":
+                mask = imagenet_a_wnids
+            elif split == "rendition":
+                mask = imagenet_r_wnids
+            else:
+                mask = None
             val_transform = get_val_transform(model_config, split)
             if split == "val":
                 dts = hfai.datasets.ImageNet('val', transform=val_transform)
                 val_loader = prepare_loader(dts, val_batch_size)
             else:
                 val_loader = prepare_loader(split, val_batch_size, val_transform)
-            acc, _ = validate(val_loader, model, criterion, val_ratio)
+            acc, _ = validate(val_loader, model, criterion, val_ratio, mask=mask)
             result[split] = acc
             if split == "val":
                 result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]

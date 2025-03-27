@@ -79,6 +79,8 @@ def validate(dataloader, model, criterion, val_ratio, adv=False, mask=None):
             samples = attack(samples, labels)
         with torch.no_grad():
             outputs = model(samples)
+            if mask is not None:
+                outputs[:, mask] = -float('inf')
             # print(f'output shape: {outputs.shape}')
             loss += criterion(outputs, labels)
             _, preds = outputs.topk(5, -1, True, True)
