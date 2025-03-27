@@ -95,20 +95,27 @@ def init_dataset(args, model_config):
 def get_mean(l):
     return sum(l) / len(l)
 
-def get_model_and_config(model_name, variant=None, offline=False):
-    print(f'{model_name}')
-    if variant is None:
-        if offline:
-            model = timm.create_model(model_name, checkpoint_path=os.path.join("pretrained", model_name + ".npz"))
-        else:
-            model = timm.create_model(model_name, pretrained=True)
-    else:
-        model = timm.create_model(model_name, pretrained=False)
-        if variant == "dat":
-            if offline:
-                ckpt = torch.load(os.path.join("pretrained", model_name + "_" + variant + ".pth.tar"))
-            else:
-                ckpt = model_zoo.load_url("http://alisec-competition.oss-cn-shanghai.aliyuncs.com/xiaofeng/easy_robust/benchmark_models/ours/examples/dat/model_best.pth.tar")
+def get_model_and_config(model_name, pretrained=True, model_dir="pretrained", offline=False):
+    """Get a model with random or pretrained weights, and some hyperparameters.
+    When pretrained is True, it first tries to find a checkpoint file from model_dir. If not found, downloads it online.
+    Example models:
+    'resnet50-prime', 'vit_base_patch16_224', 'resnet50-deepaugment', 'vit_base_patch32_224',
+    'vit-drvit', 'vit_base_patch16_224-dat', 'vit-rvt-s', 'resnet50-augmix'
+    >>> get_model_and_config("vit_base_patch16_224-dat")
+    ...
+    """
+    file_names = os.listdir(model_dir)
+    models = [f.split(".")[0] for f in file_names]
+    model_type = model_name.split("-")[0]
+    if not pretrained:
+        model = timm.create_model(model_type, pretrained=False)
+    elif model_name in models:
+        file_name = file_names[models.index(model_name)]
+        if file_name.endswith(".npz"):
+            model = timm.create_model(model_type, checkpoint_path=os.path.join("pretrained", model_name + ".npz"))
+        elif file_name.endswith(".pth.tar"):
+            model = timm.create_model(model_type, pretrained=False)
+            ckpt = torch.load(os.path.join("pretrained", model_name + ".pth.tar"))
             if 'state_dict' in ckpt.keys():
                 state_dict = ckpt['state_dict']
             else:
@@ -120,24 +127,15 @@ def get_model_and_config(model_name, variant=None, offline=False):
                         st_dict[k[2:]] = v
                 model.load_state_dict(st_dict)
             else:
-                model.load_state_dict(ckpt)
+                model.load_state_dict(state_dict)
         else:
-            raise NotImplementedError
-    config = resolve_data_config({}, model=model)
-    print(config)
-    try:
-        patch_size = model.patch_embed.patch_size[0]
-        img_size = model.patch_embed.img_size[0]
-    except:
-        patch_size = 32
-        img_size = 224
-    print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
-
-    return model, patch_size, img_size, config
-
-def get_model_and_config_offline(model_name):
-    print(f'{model_name}')
-    model = timm.create_model(model_name, checkpoint_path=os.path.join("models", model_name + ".npz"))
+            raise ValueError("Model file extension must be one of [\".npz\", \".pth.tar\"]!")
+    else:
+        if offline:
+            raise ValueError("Offline mode, please download the checkpoint in advance.")
+        elif "-" in model_name:
+            raise ValueError("This checkpoint likely doesn't exist in Timm. Please download it in advance")
+        model = timm.create_model(model_type, pretrained=True)
     config = resolve_data_config({}, model=model)
     print(config)
     try:

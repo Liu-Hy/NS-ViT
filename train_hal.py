@@ -158,8 +158,8 @@ def main(gpu, args):
         img_ratio, train_ratio, val_ratio = 0.001, 0.001, 0.1
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch16_224'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat', offline=True)
+    model_name = 'vit_base_patch16_224-dat'
+    model, patch_size, img_size, model_config = get_model_and_config(model_name)
     model.cuda(gpu)
 
     m = model_name.split('_')[1]

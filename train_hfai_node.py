@@ -122,8 +122,8 @@ def main():
     save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch16_224'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat', offline=True)
+    model_name = 'vit_base_patch16_224-dat'
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, offline=True)
     model.cuda()
     #model = hfai.nn.to_hfai(model)
     model = nn.DataParallel(model)
