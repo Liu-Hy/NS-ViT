@@ -9,7 +9,6 @@ from tqdm import tqdm
 
 
 def encoder_level_noise(model, loader, img_size, rounds, nlr, lim, device):
-    # Todo: Some issue with making it work on a GPU
     model = model.to(device)
     model.eval()
     model.zero_grad()
@@ -71,7 +70,6 @@ def encoder_level_noise(model, loader, img_size, rounds, nlr, lim, device):
     return delta_x
 
 def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, device):
-    # Todo: Some issue with making it work on a GPU
     print(f"img size {img_size}")
     model = model.to(device)
     model.eval()
@@ -102,7 +100,7 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     #iterator = tqdm(range(rounds))
     for i in range(rounds):
         iterator = tqdm(loader)
-        for st, (imgs, _) in enumerate(iterator):
+        for st, (imgs, lab) in enumerate(iterator):
             assert delta_x.requires_grad == True
             imgs = imgs.to(device)
 

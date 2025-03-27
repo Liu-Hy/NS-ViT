@@ -7,7 +7,10 @@ from torch.utils.data import SubsetRandomSampler
 from torch.utils.data.distributed import DistributedSampler
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
-from torchvision import transforms, models, datasets
+#from torchvision import transforms, datasets
+from robustness import datasets
+from robustness.tools.imagenet_helpers import ImageNetHierarchy
+
 from utils import get_model_and_config, validate_encoder_noise, encoder_forward, empty_gpu
 from methods import encoder_level_noise, encoder_level_epsilon_noise
 from tqdm import tqdm
@@ -67,17 +70,20 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
         iterator.set_postfix({"loss": round((epoch_loss / (step + 2)), 3)})
 
 
-def validate(data_path, model, criterion, transform, batch_size, val_ratio, is_clean=False):
+def validate(data_path, model, class_ranges, criterion, batch_size, val_ratio, is_clean=False):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
-    val_dataset = datasets.ImageFolder(data_path, transform)
+    """val_dataset = datasets.ImageFolder(data_path, transform)
 
     val_size = len(val_dataset)
     indices = torch.randperm(val_size)[:int(val_ratio * val_size)]
     val_sampler = SubsetRandomSampler(indices)
 
     dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, sampler=val_sampler, num_workers=16,
-                                             pin_memory=True)
+                                             pin_memory=True)"""
+    val_dataset = datasets.CustomImageNet(data_path, class_ranges)
+    _, dataloader = val_dataset.make_loaders(workers=16, batch_size=batch_size, subset=int(3000 * val_ratio), only_val=
+                                             True)
     with torch.no_grad():
         for step, batch in enumerate(dataloader):
             samples, labels = [x.cuda(non_blocking=True) for x in batch]
@@ -90,7 +96,7 @@ def validate(data_path, model, criterion, transform, batch_size, val_ratio, is_c
             correct5 += torch.eq(preds, labels.unsqueeze(1)).sum()
             total += samples.size(0)
 
-    loss_val = loss.item() / len(dataloader)
+    loss_val = loss.item() / len(dataloader.dataset.targets) # should be like len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
     acc5 = 100 * correct5.item() / total.item()
     if is_clean:
@@ -103,20 +109,20 @@ def mean(l):
     return sum(l) / len(l)
 
 
-def validate_all(data_path, model, criterion, transform, batch_size, delta_x, val_ratio, device):
+def validate_all(data_path, model, class_ranges, criterion, batch_size, delta_x, val_ratio, device):
     model.eval()
     es = []
     # result = dict()
     result = {"mce": 1.}
     # for type_path in sorted(data_path.iterdir()):
-    clean_path = data_path.joinpath("imagenet/val")
+    clean_path = data_path.joinpath("imagenet")
     """if delta_x is not None:
         print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
         corr_res = validate_encoder_noise(model, clean_path, transform, batch_size, delta_x, val_ratio, device)
         idx = torch.randperm(delta_x.nelement())
         t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
         incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)"""
-    clean_e, _ = validate(clean_path, model, criterion, transform, batch_size, val_ratio, is_clean=True)
+    clean_e, _ = validate(clean_path, model, class_ranges, criterion, batch_size, val_ratio, is_clean=True)
     for typ in tqdm(corruptions):
         type_path = data_path.joinpath(f"imagenet-c/{typ}")
         assert type_path in list(data_path.joinpath("imagenet-c").iterdir())
@@ -124,7 +130,7 @@ def validate_all(data_path, model, criterion, transform, batch_size, delta_x, va
         for s in range(1, 6):
             s_path = type_path.joinpath(str(s))
             assert s_path in list(type_path.iterdir())
-            s_e, _ = validate(s_path, model, criterion, transform, batch_size, val_ratio)
+            s_e, _ = validate(s_path, model, class_ranges, criterion, batch_size, val_ratio)
             type_e.append(s_e)
         es.append(mean(type_e))
     me = mean(es)
@@ -145,15 +151,15 @@ def main():
     print(device)
     # 超参数设置
     epochs = 10
-    train_batch_size = 64  # 256 for base model
+    train_batch_size = 128  # 256 for base model
     val_batch_size = 128
     lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    rounds, nlr, lim = 1, 0.1, 3  # lim=1.0, nlr=0.02
+    rounds, nlr, lim = 5, 0.1, 3  # lim=1.0, nlr=0.02
     eps = 0.01  # 0.001
     adv = True
-    img_ratio = 0.05
-    train_ratio = 0.05
-    val_ratio = 0.01
+    img_ratio = 0.1
+    train_ratio = 1
+    val_ratio = 1
     task = "imagenet"  # "imagenette"
     save_path = Path("./output").joinpath(task)
     data_path = Path("/var/lib/data")
@@ -161,7 +167,7 @@ def main():
 
     # 模型、数据、优化器
     # model = models.resnet50().cuda()
-    model_name = 'vit_base_patch16_224'
+    model_name = 'vit_base_patch32_224'
     model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=True)
     model.cuda()
 
@@ -174,25 +180,31 @@ def main():
     noise_path.mkdir(exist_ok=True, parents=True)
     model_path = setting_path.joinpath("model")
     model_path.mkdir(exist_ok=True, parents=True)
-    """train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-    ])  # 定义训练集变换 
+    """
     train_dataset = hfai.datasets.ImageNet('train', transform=train_transform)
     train_datasampler = DistributedSampler(train_dataset)
     train_dataloader = train_dataset.loader(batch_size, sampler=train_datasampler, num_workers=4, pin_memory=True)"""
 
-    train_transform = transforms.Compose([
+    """train_transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(), transforms.Normalize(model_config['mean'], model_config['std'])])
+        transforms.ToTensor(), transforms.Normalize(model_config['mean'], model_config['std'])])"""
 
-    base_dataset = datasets.ImageFolder(data_path.joinpath('imagenet/train'), train_transform)
-    print(data_path.joinpath('imagenet/train'))
-    train_size = len(base_dataset)
+    in_path = data_path.joinpath('imagenet')
+    in_info_path = data_path.joinpath('imagenet/info')
+    n_classes = 10
+    in_hier = ImageNetHierarchy(in_path, in_info_path)
+    superclass_wnid, class_ranges, label_map = in_hier.get_superclasses(n_classes,
+                                                                        ancestor_wnid='n00001740',
+                                                                        superclass_lowest=['n02084071'],
+                                                                        balanced=True)
+    print(label_map)
+    #base_dataset = datasets.ImageFolder(data_path.joinpath('imagenet/train'), train_transform)
+    custom_dataset = datasets.CustomImageNet(in_path, class_ranges)
+    img_loader, _ = custom_dataset.make_loaders(workers=16, batch_size=train_batch_size, subset=int(77237*img_ratio))
+    train_loader, _ = custom_dataset.make_loaders(workers=16, batch_size=train_batch_size, subset=int(77237*train_ratio))
+
+    """base_dataset = datasets.ImageFolder(data_path.joinpath('imagenet/train'), train_transform)
     img_indices = torch.randperm(train_size)[:int(img_ratio * train_size)]
     img_sampler = SubsetRandomSampler(img_indices)
     train_indices = torch.randperm(train_size)[:int(train_ratio * train_size)]
@@ -200,23 +212,17 @@ def main():
     img_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=img_sampler,
                                              num_workers=16, pin_memory=True)
     train_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=train_sampler,
-                                               num_workers=16, pin_memory=True)
+                                               num_workers=16, pin_memory=True)"""
 
+    """
+    val_dataset = hfai.datasets.ImageNet('val', transform=val_transform)
+    val_datasampler = DistributedSampler(val_dataset)
+    val_dataloader = val_dataset.loader(batch_size, sampler=val_datasampler, num_workers=4, pin_memory=True)"""
     """val_transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-    ])  # 定义测试集变换
-    val_dataset = hfai.datasets.ImageNet('val', transform=val_transform)
-    val_datasampler = DistributedSampler(val_dataset)
-    val_dataloader = val_dataset.loader(batch_size, sampler=val_datasampler, num_workers=4, pin_memory=True)"""
-    val_transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(model_config['mean'], model_config['std'])])
+        transforms.Normalize(model_config['mean'], model_config['std'])])"""
     # val_dataset = datasets.ImageFolder(data_path.joinpath('val'), val_transform)
     # val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size, shuffle=True, num_workers=16,
     # pin_memory=True)
@@ -224,8 +230,6 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs)
-    # optimizer = SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-4)
-    # scheduler = StepLR(optimizer, step_size=30, gamma=0.9)
 
     best_rbn = 0.
 
@@ -254,17 +258,11 @@ def main():
                 torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
-        """print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
-        corr_res = validate_by_parts(model, val_loader, delta_x, device)
-        idx = torch.randperm(delta_x.nelement())
-        t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
-        incorr_res = validate_by_parts(model, val_loader, t, device)"""
-
         print("---- Training model")
         adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x)
         # acc = validate(val_loader, model, criterion, epoch)
         print("---- Validating model")
-        rs = validate_all(data_path, model, criterion, val_transform, val_batch_size, delta_x, val_ratio, device)
+        rs = validate_all(data_path, model, class_ranges, criterion, val_batch_size, delta_x, val_ratio, device)
         torch.save({"model_name": model_name, "epoch": epoch,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
