@@ -1,7 +1,7 @@
 fire>=0.5.0
 matplotlib>=3.5.2
 numpy>=1.21.5
-Pillow>=9.4.0
+Pillow>=9.3.0
 python-dotenv>=0.21.0
 requests>=2.28.1
 scipy>=1.7.3

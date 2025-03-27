@@ -1,3 +1,5 @@
+"""Functions for finding image-level and """
+
 import torch
 
 from utils import encoder_forward
@@ -26,6 +28,7 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
         with torch.no_grad():
             delta_x = patch_embed(torch.ones(1, 3, 224, 224).to(device))
     elif lim == 'range':
+        # seems to initialize delta_x with the average over 10,000 patch embeddings
         with torch.no_grad():
             delta_x_range = []
             for i in range(100):
@@ -72,6 +75,7 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
 
 
 def image_level_nullnoise(model, loader, args, logger, lim, delta_x, device):
+    """问题： 这里并没有用lim来initialize，而是直接用传递的delta_x了"""
     model = model.to(device)
     model.eval()
 

@@ -33,6 +33,8 @@ def parse_opts():
 
 
 def init_wandb(args):
+    """Read the wandb run_id from cache, or create a new run_id and cache it.
+    Unpack the arguments to instantiate a wandb logger. """
     is_resume = False
     wandb_logger = None
 
@@ -54,6 +56,7 @@ def init_wandb(args):
 
 
 def init_dataset(args, model_config):
+    """Create a Dataloader object for the training and validation set respectively. """
     base_dataset = datasets.ImageFolder(os.path.join(args.data, 'train'), transforms.Compose([
         transforms.Resize((args.img_size, args.img_size)),
         transforms.ToTensor(), transforms.Normalize(model_config['mean'], model_config['std'])]))
@@ -82,6 +85,8 @@ def get_model_and_config(model_name, pretrained=True):
 
 
 def encoder_forward(model, x):
+    # Concat CLS token to the patch embeddings,
+    # Forward pass them through the model encoder to get the features of the CLS token.
     cls_token = model.cls_token
     pos_embed = model.pos_embed
     pos_drop = model.pos_drop
@@ -90,12 +95,13 @@ def encoder_forward(model, x):
 
     x = torch.cat((cls_token.expand(x.shape[0], -1, -1), x), dim=1)
     x = pos_drop(x + pos_embed)
-    x = blocks(x)
+    x = blocks(x)  # what is blocks?
     x = norm(x)
-    return model.pre_logits(x[:, 0])
+    return model.pre_logits(x[:, 0])  # What is pre_logits?
 
 
 def validate_by_parts(model, loader, delta_x, device):
+    """Evaluate the influence of the encoder noise "delta+x" to the model's prediction on a dataset"""
     og_preds = {'feats': [], 'outs': []}
     alt_preds = {'feats': [], 'outs': []}
 
@@ -138,7 +144,7 @@ def validate_by_parts(model, loader, delta_x, device):
     abs_conf = torch.abs(mx_probs - alt_probs).mean()
     mse_conf = ((mx_probs - alt_probs) ** 2).mean()
 
-    uneq = ((mx_cls == torch.max(p_alt, dim=-1)[1]).sum()) / p_og.shape[0]
+    uneq = ((mx_cls == torch.max(p_alt, dim=-1)[1]).sum()) / p_og.shape[0]  # rate of agreement
 
     print(
         f'MSE FEATS: {mse_feats.item():.4f}\t MSE LOGITS: {mse_logits.item():.4f}\t MSE PROBS: {mse_probs.item():.4f}\t ABS MAX PROB: {abs_conf.item():.4f}\t MSE MAX PROB: {mse_conf.item():.4f}\t EQ CLS: {uneq:.4f}')
@@ -147,6 +153,7 @@ def validate_by_parts(model, loader, delta_x, device):
 
 
 def validate_complete(model, loader, delta_x, device):
+    """Evaluate the influence of the input noise "delta+x" to the model's prediction on a dataset"""
     with torch.no_grad():
         ogs, alts = [], []
         for _, (imgs, _) in enumerate(loader):

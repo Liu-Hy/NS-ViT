@@ -42,7 +42,7 @@ def get_model_and_config(model_name, pretrained=True):
 def calculateNullSpace(matrix):
     ns = []
     for i in range(3):
-        # What's the dimension of matrix? Seems to be computed for each channel separately.
+        # matrix shape: torch.Size([768, 3, 32, 32])
         ns.append(null_space(matrix[:, i].view(matrix.shape[0], -1).numpy()))
         print('NullSpace MAX, MIN, SHAPE: ', np.max(ns[-1]), np.min(ns[-1]), ns[-1].shape)
     return ns
@@ -122,6 +122,8 @@ print(cls_map[0], cls_map[1])
 
 
 def inference_og_and_delx(net, og_img, img):
+    """Display a raw image, perturbed image and their predicted labels and confidence.
+    Display the noise."""
     transform = transforms.Compose([transforms.Resize((img_size, img_size)), transforms.ToTensor()])
     og_img = transform(og_img)
 
@@ -191,7 +193,7 @@ def greedy_max(idx, img_patches, patchWeights):
 
 
 def patch_parallel_impose(src_patch, n_space, idx):
-    func = lambda x, A, y: np.sum(y - A.dot(x))
+    func = lambda x, A, y: np.sum(y - A.dot(x))  # should it be norm instead of sum?
     # func = lambda x, A, y: -1.0*np.sum(np.abs(y-A@x))
     tar_r = src_patch[0].view(-1)
     tar_g = src_patch[1].view(-1)
@@ -260,13 +262,14 @@ def create_batches(simg, weights, img_size, patch_size=32, lp=2):
             i_b = simg[2][i:i + patch_size, j:j + patch_size].unsqueeze(0)
             batches.append((
                 torch.cat([i_r, i_g, i_b], dim=0),
-                weights,
+                weights,  # What is weight?
                 sol_idx,
             ))
     return batches
 
 
 def create_greedy_batches(simg, weights, img_size, patch_size=32):
+    # Any differences with the previous one?
     batches = []
     simg = torch.clip(simg, -1, 1)
 
@@ -285,6 +288,7 @@ def create_greedy_batches(simg, weights, img_size, patch_size=32):
 
 
 def create_backbone_batches(simg, del_y, weights, img_size, patch_size=32):
+    # create a batch together with the delta y.
     batches = []
     simg = torch.clip(simg, -1, 1)
 
@@ -303,6 +307,7 @@ def create_backbone_batches(simg, del_y, weights, img_size, patch_size=32):
 
 
 def create_mod(outputs, img_size=224, patch_size=32):
+    # Create the modified image from the list of output patches.
     mod_img = torch.zeros((3, img_size, img_size))
     num_per_row = img_size // patch_size
     for output in outputs:
