@@ -123,6 +123,9 @@ def get_model_and_config(model_name, variant=None):
         patch_size = 32
         img_size = 224
     print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
+    #config["mean"] = (0., 0., 0.)
+    #config["std"] = (1., 1., 1.)
+
     return model, patch_size, img_size, config
 
 def get_model_and_config_offline(model_name):

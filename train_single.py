@@ -120,7 +120,7 @@ def main():
     lr = 1e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
     rounds, nlr, lim = 3, 0.02, 1  # lim=3, nlr=0.1 # round=3
     eps = 0.001  # 0.001
-    adv = True
+    adv = False
     img_ratio = 0.02 # 0.02
     train_ratio = 0.1
     val_ratio = 0.05

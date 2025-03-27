@@ -91,8 +91,6 @@ def validate(dataloader, model, criterion, val_ratio):
     loss_val = loss.item() / dist.get_world_size() / len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
     acc5 = 100 * correct5.item() / total.item()
-    #if is_clean:
-        #print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
 
     return acc1, loss_val
 

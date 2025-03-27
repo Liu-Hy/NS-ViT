@@ -1,0 +1,983 @@
+techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py
+cuda:0
+vit_base_patch16_224
+{'input_size': (3, 224, 224), 'interpolation': 'bicubic', 'mean': (0.5, 0.5, 0.5), 'std': (0.5, 0.5, 0.5), 'crop_pct': 0.9}
+vit_base_patch16_224, 224x224, patch_size:16
+
+--------------------------------
+Enter epoch 0
+---- Learning noise
+img size 224
+Noise norm: 224.4183
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:14<1:50:38,  1.01it/s, error=14.2]
+Noise trained for 1 epochs, error: 14.2216
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:07<1:45:03,  1.06it/s, error=12.3]
+Noise trained for 2 epochs, error: 12.3147
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:08<1:45:44,  1.06it/s, error=11.9]
+Noise trained for 3 epochs, error: 11.9368
+Noise norm: 196.093
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                       | 685/6841 [11:09<1:40:19,  1.02it/s, loss=0.789]
+---- Validating model
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+['val']
+['val']
+['val']
+['val']
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:52<12:18, 52.72s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:51<12:13, 56.44s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:53<11:43, 58.63s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [03:44<10:14, 55.84s/it]['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [04:35<08:59, 53.92s/it]['val']
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [05:23<07:47, 51.99s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [06:18<07:04, 53.03s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [07:08<06:03, 51.96s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [08:02<05:16, 52.67s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [08:45<04:07, 49.57s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [09:33<03:16, 49.23s/it]['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [10:13<02:19, 46.54s/it]['val']
+Traceback (most recent call last):
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [11:02<01:34, 47.12s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [11:53<00:48, 48.40s/it]['val']
+['val']
+['val']
+['val']
+['val']
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [12:36<00:00, 50.41s/it]
+mCE: 26.41%, mean_err: 20.927083333333332%
+Dev acc: 93.4375
+Avg performance: 68.75774104618178
+ {'val': 93.65234375, 'adversarial': 38.28125, 'damagenet': 80.95703125, 'rendition': 45.3125, 'sketch': 61.62109375, 'v2': 87.890625, 'corruption': 26.410656426727574}
+New Best Acc: 93.44%
+
+--------------------------------
+Enter epoch 1
+---- Learning noise
+img size 224
+Noise norm: 223.968
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [03:03<2:30:43,  1.35s/it, error=12.9]
+Noise trained for 1 epochs, error: 12.8884
+  2%|█████▌                                                                                                                                                                                                                                                                               | 136/6841 [02:53<2:22:31,  1.28s/it, error=10]
+Noise trained for 2 epochs, error: 10.0383
+  2%|█████▍                                                                                                                                                                                                                                                                              | 136/6841 [02:43<2:14:37,  1.20s/it, error=9.4]
+Noise trained for 3 epochs, error: 9.3999
+Noise norm: 158.9936
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                       | 685/6841 [12:46<1:54:49,  1.12s/it, loss=0.437]
+---- Validating model
+['val']
+['val']
+Traceback (most recent call last):
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:58<13:34, 58.18s/it]['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+Traceback (most recent call last):
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:52<12:06, 55.87s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:45<10:54, 54.57s/it]['val']
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [03:26<09:03, 49.41s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+['val']
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [04:10<07:52, 47.23s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:49<06:39, 44.42s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [05:37<06:04, 45.59s/it]['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [06:24<05:22, 46.05s/it]['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+['val']
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [07:15<04:46, 47.80s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+['val']
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [07:55<03:46, 45.28s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [08:42<03:02, 45.71s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [09:18<02:08, 42.95s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [09:58<01:23, 42.00s/it]['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+['val']
+Traceback (most recent call last):
+['val']
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [10:43<00:42, 42.92s/it]['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+['val']
+['val']
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [11:20<00:00, 45.34s/it]
+mCE: 25.22%, mean_err: 20.005208333333332%
+Dev acc: 93.828125
+Avg performance: 69.65370705595123
+ {'val': 93.84765625, 'adversarial': 47.265625, 'damagenet': 79.58984375, 'rendition': 46.875, 'sketch': 58.10546875, 'v2': 87.109375, 'corruption': 25.217019358341435}
+New Best Acc: 93.83%
+
+--------------------------------
+Enter epoch 2
+---- Learning noise
+img size 224
+Noise norm: 224.269
+  2%|█████▌                                                                                                                                                                                                                                                                               | 136/6841 [02:20<1:27:56,  1.27it/s, error=11]Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+  2%|█████▌                                                                                                                                                                                                                                                                               | 136/6841 [02:25<1:59:43,  1.07s/it, error=11]
+Noise trained for 1 epochs, error: 10.9987
+  2%|█████▍                                                                                                                                                                                                                                                                              | 136/6841 [02:26<1:36:50,  1.15it/s, error=9.8]Traceback (most recent call last):
+  2%|█████▍                                                                                                                                                                                                                                                                              | 136/6841 [02:32<2:05:01,  1.12s/it, error=9.8]
+Noise trained for 2 epochs, error: 9.8032
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:31<2:04:42,  1.12s/it, error=7.42]
+Noise trained for 3 epochs, error: 7.4152
+Noise norm: 158.0226
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                       | 685/6841 [12:07<1:48:56,  1.06s/it, loss=0.418]
+---- Validating model
+['val']
+['val']
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+['val']
+['val']
+['val']
+['val']
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:53<12:26, 53.35s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:49<11:53, 54.92s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:48<11:21, 56.82s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [03:27<09:09, 49.95s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [04:12<07:59, 47.98s/it]['val']
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:53<06:52, 45.79s/it]['val']
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [05:43<06:15, 46.95s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [06:30<05:28, 46.90s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [07:21<04:49, 48.30s/it]['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [08:01<03:48, 45.78s/it]['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [08:43<02:59, 44.76s/it]['val']
+Traceback (most recent call last):
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+['val']
+['val']
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [09:20<02:06, 42.22s/it]['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+['val']
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [10:03<01:25, 42.53s/it]['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [10:52<00:44, 44.29s/it]['val']
+['val']
+['val']
+['val']
+['val']
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [11:31<00:00, 46.12s/it]
+mCE: 24.97%, mean_err: 19.880208333333332%
+Dev acc: 94.2578125
+Avg performance: 71.17179085450923
+ {'val': 93.75, 'adversarial': 45.703125, 'damagenet': 80.6640625, 'rendition': 51.302083333333336, 'sketch': 61.9140625, 'v2': 89.84375, 'corruption': 24.97454735176876}
+New Best Acc: 94.26%
+
+--------------------------------
+Enter epoch 3
+---- Learning noise
+img size 224
+Noise norm: 224.0975
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:41<1:40:23,  1.11it/s, error=9.32]Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:44<2:14:47,  1.21s/it, error=9.32]
+Noise trained for 1 epochs, error: 9.3161
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:30<1:39:44,  1.12it/s, error=8.85]Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+  2%|█████▍                                                                                                                                                                                                                                                                             | 136/6841 [02:34<2:06:43,  1.13s/it, error=8.85]
+Noise trained for 2 epochs, error: 8.8487
+  1%|██▌                                                                                                                                                                                                                                                                                 | 65/6841 [01:19<2:15:51,  1.20s/it, error=8.09]Image finished training at epoch 2 step 65
+  1%|██▌                                                                                                                                                                                                                                                                                 | 65/6841 [01:21<2:21:07,  1.25s/it, error=8.09]
+Noise norm: 172.4143
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                       | 685/6841 [12:25<1:51:36,  1.09s/it, loss=0.414]
+---- Validating model
+['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:56<13:07, 56.24s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:54<12:25, 57.31s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:46<10:59, 55.00s/it]['val']
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [03:26<08:59, 49.07s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [04:12<08:00, 48.02s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:52<06:47, 45.31s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [05:38<06:03, 45.46s/it]['val']
+['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [06:23<05:18, 45.47s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+['val']
+['val']
+['val']
+['val']
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [07:13<04:39, 46.66s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [07:49<03:37, 43.55s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [08:29<02:49, 42.47s/it]['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [09:05<02:01, 40.49s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [09:45<01:20, 40.29s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [10:27<00:40, 40.80s/it]['val']
+['val']
+['val']
+['val']
+['val']
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [11:02<00:00, 44.17s/it]
+mCE: 26.98%, mean_err: 21.421875%
+Dev acc: 93.828125
+Avg performance: 69.79720181774441
+ {'val': 93.84765625, 'adversarial': 44.140625, 'damagenet': 80.76171875, 'rendition': 51.692708333333336, 'sketch': 62.3046875, 'v2': 82.8125, 'corruption': 26.97948310912247}
+
+--------------------------------
+Enter epoch 4
+---- Learning noise
+img size 224
+Noise norm: 224.3006
+  2%|█████▌                                                                                                                                                                                                                                                                               | 136/6841 [02:08<1:45:12,  1.06it/s, error=10]
+Noise trained for 1 epochs, error: 10.0475
+  1%|███▌                                                                                                                                                                                                                                                                                | 87/6841 [01:23<1:24:20,  1.33it/s, error=9.25]Image finished training at epoch 1 step 87
+  1%|███▌                                                                                                                                                                                                                                                                                | 87/6841 [01:26<1:51:23,  1.01it/s, error=9.25]
+Noise norm: 189.5411
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                       | 685/6841 [11:21<2:45:55,  1.62s/it, loss=0.407]Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                       | 685/6841 [11:24<1:42:35,  1.00it/s, loss=0.407]
+---- Validating model
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+['val']
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:47<10:58, 47.00s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:35<10:22, 47.85s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:24<09:38, 48.23s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [02:59<07:53, 43.07s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [03:39<06:59, 42.00s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+['val']
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:23<06:25, 42.85s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [05:13<06:00, 45.08s/it]['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [06:01<05:21, 45.86s/it]['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+['val']
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [06:53<04:47, 47.85s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [07:34<03:49, 45.87s/it]['val']
+['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [08:21<03:04, 46.08s/it]['val']
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [09:06<02:17, 45.78s/it]['val']
+['val']
+['val']
+['val']
+['val']
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [09:51<01:31, 45.51s/it]['val']
+Traceback (most recent call last):
+['val']
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [10:38<00:46, 46.08s/it]['val']
+Traceback (most recent call last):
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+['val']
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [11:19<00:00, 45.31s/it]
+mCE: 23.97%, mean_err: 19.109375%
+Dev acc: 94.296875
+Avg performance: 70.35315233487447
+ {'val': 95.41015625, 'adversarial': 44.140625, 'damagenet': 80.17578125, 'rendition': 47.786458333333336, 'sketch': 64.16015625, 'v2': 84.765625, 'corruption': 23.96673573921202}
+New Best Acc: 94.30%
