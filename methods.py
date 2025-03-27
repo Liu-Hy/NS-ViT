@@ -34,7 +34,7 @@ def encoder_level_noise(model, loader, img_size, rounds, nlr, lim, device):
     #scheduler = StepLR(optimizer, step_size=200, gamma=0.9)
     #print('Starting magnitude', delta_x.shape, (((delta_x.squeeze(0)) ** 2).sum(dim=0) ** 0.5).mean())
 
-    iterator = tqdm(range(rounds))
+    iterator = tqdm(range(rounds), position=0, leave=True)
     for i in iterator:
         for _, (imgs, _) in enumerate(loader):
             assert delta_x.requires_grad == True
@@ -99,7 +99,7 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
 
     #iterator = tqdm(range(rounds))
     for i in range(rounds):
-        iterator = tqdm(loader)
+        iterator = tqdm(loader, position=0, leave=True)
         for st, (imgs, lab) in enumerate(iterator):
             assert delta_x.requires_grad == True
             imgs = imgs.to(device)

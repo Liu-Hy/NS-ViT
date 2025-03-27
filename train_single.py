@@ -38,7 +38,7 @@ def train(dataloader, model, criterion, optimizer, scheduler, epoch):
 
 def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
     model.train()
-    iterator = tqdm(dataloader)
+    iterator = tqdm(dataloader, position=0, leave=True)
     epoch_loss = 0.
     for step, batch in enumerate(iterator):
         imgs, labels = [x.cuda(non_blocking=True) for x in batch]
@@ -123,7 +123,7 @@ def validate_all(data_path, model, class_ranges, criterion, batch_size, delta_x,
         t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
         incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)"""
     clean_e, _ = validate(clean_path, model, class_ranges, criterion, batch_size, val_ratio, is_clean=True)
-    for typ in tqdm(corruptions):
+    for typ in tqdm(corruptions, position=0, leave=True):
         type_path = data_path.joinpath(f"imagenet-c/{typ}")
         assert type_path in list(data_path.joinpath("imagenet-c").iterdir())
         type_e = []
@@ -150,11 +150,11 @@ def main():
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     print(device)
     # 超参数设置
-    epochs = 10
+    epochs = 5
     train_batch_size = 128  # 256 for base model
     val_batch_size = 128
     lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    rounds, nlr, lim = 5, 0.1, 3  # lim=1.0, nlr=0.02
+    rounds, nlr, lim = 10, 0.1, 3  # lim=1.0, nlr=0.02
     eps = 0.01  # 0.001
     adv = True
     img_ratio = 0.1
