@@ -7,14 +7,13 @@ from pathlib import Path
 import torch
 from torch import nn
 import torch.multiprocessing as mp
-from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import SubsetRandomSampler
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 import torchattacks
 #from torchvision import transforms
 from ImageNetDG_10 import ImageNetDG_10
-
+from timm.utils import ModelEmaV2, distribute_bn
 from utils import *
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -22,7 +21,7 @@ import wandb
 
 
 
-def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch):
+def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, model_ema):
     model.train()
     for step, batch in enumerate(dataloader):
         if step > int(train_ratio * len(dataloader)):
@@ -43,7 +42,8 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         loss.backward()
         optimizer.step()
         scheduler.step()
-        if step % 20 == 0:
+        model_ema.update(model)
+        if step % 500 == 0:
             if adv:
                 print(
                     f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}, Consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
@@ -117,14 +117,14 @@ def main(args):
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     # 超参数设置
     epochs = 10
-    train_batch_size = 64  # 256 for base model
-    val_batch_size = 64
+    train_batch_size = 32  # 256 for base model
+    val_batch_size = int(train_batch_size * 1.5)
     rounds = 3
     lr = args.lr  # When using SGD and StepLR, set to 0.001
     lim = args.lim
     nlr = args.nlr
     eps = args.eps
-    adv = True
+    adv = not args.no_adv
     img_ratio = 0.1  # 0.02
     train_ratio = 1.  # 0.1
     val_ratio = 1.  # 0.05
@@ -137,11 +137,14 @@ def main(args):
         img_ratio, train_ratio, val_ratio = 0.001, 0.001, 0.1
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch16_224-dat'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name)
+    model_name = 'vit_base_patch16_224'
+    ckpt_path = "../pretrained/vit_base_patch16_224-dat.pth.tar"
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, ckpt_path=ckpt_path, use_ema=False)
     model.cuda()
     # Wrap the model
     model = nn.DataParallel(model)
+    model_ema = ModelEmaV2(model, decay=0.9998, device=None)
+    load_checkpoint(model_ema.module.module, ckpt_path, use_ema=True)
 
     m = model_name.split('_')[1]
     setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}' + \
@@ -175,8 +178,8 @@ def main(args):
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
-    val_set = ImageNetDG_10(data_path.joinpath('imagenet/val'), info_path, val_transform)
-    val_loader = DataLoader(val_set, batch_size=val_batch_size, shuffle=False, num_workers=8, pin_memory=True)
+    typ_path = data_path.joinpath("imagenet", "val")
+    val_loader = prepare_loader(typ_path, info_path, val_batch_size, val_transform)
 
     criterion = nn.CrossEntropyLoss().cuda()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
@@ -190,6 +193,7 @@ def main(args):
         print(f"Restore training from epoch {start_epoch}")
         checkpoint = torch.load(model_path.joinpath(str(start_epoch - 1)))
         model.module.load_state_dict(checkpoint["model_state_dict"])
+        model_ema.module.module.load_state_dict(checkpoint["state_dict_ema"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         best_acc = torch.load(setting_path.joinpath("best_epoch"))["best_acc"]
@@ -208,16 +212,19 @@ def main(args):
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
         print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch)
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, model_ema)
         print("---- Validating model")
         result = dict()
         # Evaluate on held-out set
-        dev_acc, _ = validate(dev_loader, model, criterion, val_ratio)
+        dev_acc, _ = validate(dev_loader, model_ema.module, criterion, val_ratio)
         # Evaluate on val set
-        val_acc, _ = validate(val_loader, model, criterion, val_ratio)
+        val_acc, _ = validate(val_loader, model_ema.module, criterion, val_ratio)
         result["val"] = val_acc
+        val_acc, _ = validate(val_loader, model_ema.module, criterion, val_ratio, adv=True)
+        result["fgsm"] = val_acc
         torch.save({"model_name": model_name, "epoch": epoch,
                     "model_state_dict": model.module.state_dict(),
+                    "state_dict_ema": model_ema.module.module.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
                     "scheduler_state_dict": scheduler.state_dict(),
                     "result": result}, model_path.joinpath(str(epoch)))
@@ -231,13 +238,6 @@ def main(args):
             torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc},
                        setting_path.joinpath("best_epoch"))
 
-    """wandb.log({
-        'epoch': epoch,
-        'dev_acc': dev_acc,
-        'total': total,
-        'mce': corruption_rs["mce"],
-    })"""
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -246,6 +246,7 @@ if __name__ == '__main__':
     parser.add_argument('--lim', type=float, default=3, help='sampling limit of the noise')
     parser.add_argument('--nlr', type=float, default=0.1, help='learning rate for the noise')
     parser.add_argument('--eps', type=float, default=0.01, help='threshold to stop training the noise')
+    parser.add_argument('--no-adv', action='store_true')
 
     args = parser.parse_args()
     main(args)

@@ -16,6 +16,7 @@ import torchattacks
 from ImageNetDG_10 import ImageNetDG_10
 #from torchvision import transforms
 import torch.distributed as dist
+from timm.utils import ModelEmaV2, distribute_bn
 import argparse
 from utils import *
 from tqdm import tqdm
@@ -24,9 +25,11 @@ import wandb
 
 
 
-def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, gpu):
+def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, model_ema, disable):
     model.train()
-    for step, batch in enumerate(dataloader):
+    iterator = tqdm(dataloader, position=0, disable=disable)
+    epoch_loss = 0.
+    for step, batch in enumerate(iterator):
         if step > int(train_ratio * len(dataloader)):
             break
         imgs, labels = [x.cuda(non_blocking=True) for x in batch]
@@ -45,14 +48,10 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         loss.backward()
         optimizer.step()
         scheduler.step()
-        if gpu == 0 and step % 20 == 0:
-            if adv:
-                print(
-                    f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}, Consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
-                    flush=True)
-            else:
-                print(
-                    f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}', flush=True)
+        model_ema.update(model)
+        epoch_loss += loss.item()
+        iterator.set_postfix({"loss": round((epoch_loss / (step + 1)), 3)})
+
 
 
 def validate(dataloader, model, criterion, val_ratio, adv=False):
@@ -150,9 +149,12 @@ def main(gpu, args):
     disable = (gpu != 0)
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch16_224-dat'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name)
+    model_name = 'vit_base_patch16_224'
+    ckpt_path = "../pretrained/vit_base_patch16_224-dat.pth.tar"
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, ckpt_path=ckpt_path, use_ema=False)
     model.cuda(gpu)
+    model_ema = ModelEmaV2(model, decay=0.9998, device=None)
+    load_checkpoint(model_ema.module, ckpt_path, use_ema=True)
 
     m = model_name.split('_')[1]
     setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}' + \
@@ -207,6 +209,7 @@ def main(gpu, args):
         print(f"Restore training from epoch {start_epoch}")
         checkpoint = torch.load(model_path.joinpath(str(start_epoch - 1)))
         model.module.load_state_dict(checkpoint["model_state_dict"])
+        model_ema.module.load_state_dict(checkpoint["state_dict_ema"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         if rank == 0:
@@ -229,17 +232,21 @@ def main(gpu, args):
                     print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
         print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, gpu, disable)
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, model_ema, disable)
+        distribute_bn(model, args.world_size, True)
+        distribute_bn(model_ema, args.world_size, True)
         print("---- Validating model")
         result = dict()
         # Evaluate on held-out set
-        dev_acc, _ = validate(dev_loader, model, criterion, val_ratio)
+        dev_acc, _ = validate(dev_loader, model_ema.module, criterion, val_ratio)
         # Evaluate on val set
-        val_acc, _ = validate(val_loader, model, criterion, val_ratio)
+        val_acc, _ = validate(val_loader, model_ema.module, criterion, val_ratio)
+        val_acc, _ = validate(val_loader, model_ema.module, criterion, val_ratio, adv=True)
         result["val"] = val_acc
         if gpu == 0:
             torch.save({"model_name": model_name, "epoch": epoch,
                         "model_state_dict": model.module.state_dict(),
+                        "state_dict_ema": model_ema.module.state_dict(),
                         "optimizer_state_dict": optimizer.state_dict(),
                         "scheduler_state_dict": scheduler.state_dict(),
                         "result": result}, model_path.joinpath(str(epoch)))
@@ -252,12 +259,11 @@ def main(gpu, args):
                     best_acc = dev_acc
                     print(f'New Best Acc: {best_acc:.2f}%')
                     torch.save(
-                        {"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc},
-                        setting_path.joinpath("best_epoch"))
+                        {"model_state_dict": model.module.state_dict(), "state_dict_ema": model_ema.module.state_dict(),
+                         "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
 
 
 if __name__ == '__main__':
-    # main()
     os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
     os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
     parser = argparse.ArgumentParser()

@@ -185,7 +185,7 @@ def encoder_forward(model, x):
     return mdl.pre_logits(x[:, 0])
 
 
-def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, img_ratio, disable=False):
+def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, img_ratio, disable=True):
     print(f"img size {img_size}")
     model.eval()
     model.zero_grad()
