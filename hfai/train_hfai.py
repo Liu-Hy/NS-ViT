@@ -15,6 +15,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 import torchattacks
+from torchattacks import AutoAttack
 # from torchvision import transforms
 from ImageNetDG import ImageNetDG
 import argparse
@@ -25,7 +26,6 @@ import hfai
 import hfai.distributed as dist
 from ffrecord.torch import DataLoader
 from ffrecord.torch.dataset import Subset
-from easyrobust.attacks import AutoAttack
 
 dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
 
@@ -70,15 +70,13 @@ def validate(dataloader, model, criterion, val_ratio, mask=None, adv='none', eps
     if adv == "FGSM":
         attack = torchattacks.FGSM(model, eps=8 / 225)
     elif adv != "none":
-        attack = AutoAttack(model, norm=adv, eps=eps, version='standard')
+        attack = AutoAttack(model, norm=adv, eps=eps, version='standard', n_classes=1000)
     for step, batch in enumerate(dataloader):
         if step > int(val_ratio * len(dataloader)):
             break
         samples, labels = [x.cuda(non_blocking=True) for x in batch]
-        if adv == "FGSM":
+        if adv != "none":
             samples = attack(samples, labels)
-        elif adv != "none":
-            samples = attack.run_standard_evaluation(samples, labels, bs=samples.shape[0])
         with torch.no_grad():
             outputs = model(samples)
             if mask is not None:
