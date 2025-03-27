@@ -229,7 +229,7 @@ def plasma_fractal(mapsize=256, wibbledecay=3):
 def clipped_zoom(img, zoom_factor):
     h = img.shape[0]
     # ceil crop height(= crop width)
-    ch = int(np.ceil(h / zoom_factor))
+    ch = int(np.ceil(h / float(zoom_factor)))
 
     top = (h - ch) // 2
     img = scizoom(img[top:top + ch, top:top + ch], (zoom_factor, zoom_factor, 1), order=1)
@@ -255,7 +255,7 @@ def shot_noise(x, severity=1):
     c = [60, 25, 12, 5, 3][severity - 1]
 
     x = np.array(x) / 255.
-    return np.clip(np.random.poisson(x * c) / c, 0, 1) * 255
+    return np.clip(np.random.poisson(x * c) / float(c), 0, 1) * 255
 
 
 def impulse_noise(x, severity=1):
@@ -377,7 +377,7 @@ def zoom_blur(x, severity=1):
 
 
 def fog(x, severity=1):
-    c = [(1.5, 2), (2, 2), (2.5, 1.7), (2.5, 1.5), (3, 1.4)][severity - 1]
+    c = [(1.5, 2), (2., 2), (2.5, 1.7), (2.5, 1.5), (3., 1.4)][severity - 1]
 
     x = np.array(x) / 255.
     max_val = x.max()
@@ -392,7 +392,7 @@ def frost(x, severity=1):
          (0.65, 0.7),
          (0.6, 0.75)][severity - 1]
     idx = np.random.randint(5)
-    filename = ['./frost1.png', './frost2.png', './frost3.png', './frost4.jpg', './frost5.jpg', './frost6.jpg'][idx]
+    filename = ['frost/frost1.png', 'frost/frost2.png', 'frost/frost3.png', 'frost/frost4.jpg', 'frost/frost5.jpg', 'frost/frost6.jpg'][idx]
     frost = cv2.imread(filename)
     # randomly crop and convert to rgb
     x_start, y_start = np.random.randint(0, frost.shape[0] - 224), np.random.randint(0, frost.shape[1] - 224)
