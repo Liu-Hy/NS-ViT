@@ -74,6 +74,7 @@ class ImageNetDG(BaseDataset):
         assert split in SPLITS
         self.split = split
         self.transform = transform
+        #self.data_dir = Path("/media/techt/One Touch/ffrecord_data/")
         self.data_dir = Path("/private_dataset/ImageNet_DG/")
         self.fname = self.data_dir / f"{split}" / "ffrdata"
         self.reader = FileReader(self.fname, check_data)

@@ -130,9 +130,8 @@ def encoder_forward(model, x):
     return model.pre_logits(x[:, 0])  # What is pre_logits?
 
 
-def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, device):
+def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps):
     print(f"img size {img_size}")
-    model = model.to(device)
     model.eval()
     model.zero_grad()
 
@@ -142,30 +141,24 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     patch_embed = model.patch_embed
 
     with torch.no_grad():
-        _ = patch_embed(torch.rand(1, 3, img_size, img_size).to(device))
+        _ = patch_embed(torch.rand(1, 3, img_size, img_size).cuda(non_blocking=True))
         del_x_shape = _.shape
 
-    assert isinstance(lim, (float, int))
-    delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).to(device)
+    delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).cuda(non_blocking=True)
     delta_x.requires_grad = True
     print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
     optimizer = AdamW([delta_x], lr=nlr)
     scheduler = CosineAnnealingLR(optimizer, len(loader) * rounds)
-    #optimizer = SGD([delta_x], lr=eps, momentum=0.9, weight_decay=1e-4)
-    #scheduler = StepLR(optimizer, step_size=200, gamma=0.9)
 
-    #iterator = tqdm(range(rounds))
     for i in range(rounds):
-        iterator = tqdm(loader, position=0, leave=True)
-        for st, (imgs, lab) in enumerate(iterator):
+        for st, (imgs, lab) in enumerate(loader):
             assert delta_x.requires_grad == True
-            imgs = imgs.to(device)
+            imgs = imgs.cuda(non_blocking=True)
 
             with torch.no_grad():
                 og_preds = model.head(model.forward_features(imgs))
 
-            #model.zero_grad()
             optimizer.zero_grad()
 
             x = patch_embed(imgs)
@@ -188,7 +181,6 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
             optimizer.step()
             scheduler.step()
 
-            iterator.set_postfix({"error": round(error_mult.item(), 4)})
         if not (i + 1) % 1:
             print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}')
 
