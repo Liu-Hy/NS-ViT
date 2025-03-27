@@ -48,7 +48,7 @@ def main(local_rank, args):
 
     model_name = 'vit_base_patch16_224'
     #ckpt_path = "base_ps16_epochs10_lr0.0001_bs16_adv_True_nlr0.1_rounds3_lim3_eps0.01_imgr0.1_trainr1.0_valr1.0/model/7"
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat', offline=True)
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=(args.ckpt_path=="none"), offline=True)
     if args.ckpt_path != "none":
         checkpoint = torch.load(save_path.joinpath(args.ckpt_path))
         model.load_state_dict(checkpoint["model_state_dict"])
@@ -71,6 +71,8 @@ def main(local_rank, args):
             val_loader = prepare_loader(split, val_batch_size, val_transform)
             acc, _ = validate(val_loader, model, criterion, val_ratio)
             result[split] = acc
+            if split == "val":
+                result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
     # Evaluate on imagenet-c
     corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, val_ratio)
     result["corruption"] = corruption_rs["mce"]

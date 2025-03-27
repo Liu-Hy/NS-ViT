@@ -1,4 +1,4 @@
-"""Script to run on the HFAI server"""
+"""Multi-node training script on the HFAI server"""
 import haienv
 haienv.set_env('ns')
 
@@ -11,6 +11,7 @@ from torch.utils.data import SubsetRandomSampler
 from torch.utils.data.distributed import DistributedSampler
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
+import torchattacks
 # from torchvision import transforms
 from ImageNetDG import ImageNetDG
 import argparse
@@ -59,15 +60,18 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
             model.try_save(epoch, step + 1, others=(best_acc, delta_x), force=True)
 
 
-def validate(dataloader, model, criterion, val_ratio):
+def validate(dataloader, model, criterion, val_ratio, adv=False):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
-    with torch.no_grad():
-        for step, batch in enumerate(dataloader):
-            if step > int(val_ratio * len(dataloader)):
-                break
-            samples, labels = [x.cuda(non_blocking=True) for x in batch]
-            # print(labels.shape, labels.max(), labels.min())
+    if adv:
+        attack = torchattacks.FGSM(model, eps=8 / 225)
+    for step, batch in enumerate(dataloader):
+        if step > int(val_ratio * len(dataloader)):
+            break
+        samples, labels = [x.cuda(non_blocking=True) for x in batch]
+        if adv:
+            samples = attack(samples, labels)
+        with torch.no_grad():
             outputs = model(samples)
             # print(f'output shape: {outputs.shape}')
             loss += criterion(outputs, labels)

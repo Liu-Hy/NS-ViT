@@ -1,4 +1,4 @@
-"""Script to run on the HAL cluster"""
+"""Multi-node training script on the HAL server"""
 
 import os
 from pathlib import Path

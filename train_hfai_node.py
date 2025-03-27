@@ -1,4 +1,4 @@
-"""Script to run on the HFAI server"""
+"""Single-node training script on the HFAI server"""
 import haienv
 haienv.set_env('ns')
 
