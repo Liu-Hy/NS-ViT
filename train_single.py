@@ -85,10 +85,11 @@ def main():
     train_batch_size = 128  # 256 for base model
     val_batch_size = 128
     lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    rounds, nlr, lim = 30, 0.03, 7  # lim=1.0, nlr=0.02
+    rounds, nlr, lim = 30, 0.03, 6.8  # lim=1.0, nlr=0.02
     eps = 1e-4  # 0.001
-    save_path = Path('./output')
-    data_dir = "./data"
+    task = "imagenette"
+    save_path = Path("./output").joinpath(task)
+    data_dir = os.path.join("./data", task)
     save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
