@@ -1,4 +1,4 @@
-"""Single-gpu version to debug and run on local machine"""
+"""Single-gpu script to debug and run on local machine"""
 
 import os
 from pathlib import Path
@@ -11,7 +11,7 @@ from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 import torchattacks
 #from torchvision import transforms
-from custom_dataset import ImageFolder
+from ImageNetDG_10 import ImageNetDG_10
 from utils import *
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -40,14 +40,6 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         loss.backward()
         optimizer.step()
         scheduler.step()
-        """if step % 20 == 0:
-            if adv:
-                print(
-                    f'Step {step}, Loss: {round(loss.item(), 4)}, Consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
-                    flush=True)
-            else:
-                print(
-                    f'Step {step}, Loss: {round(loss.item(), 4)}', flush=True)"""
         epoch_loss += loss.item()
         iterator.set_postfix({"loss": round((epoch_loss / (step + 1)), 3)})
 
@@ -65,7 +57,6 @@ def validate(dataloader, model, criterion, val_ratio, adv=False):
             samples = attack(samples, labels)
         with torch.no_grad():
             outputs = model(samples)
-            # print(f'output shape: {outputs.shape}')
             loss += criterion(outputs, labels)
             _, preds = outputs.topk(5, -1, True, True)
             correct1 += torch.eq(preds[:, :1], labels.unsqueeze(1)).sum()
@@ -75,11 +66,8 @@ def validate(dataloader, model, criterion, val_ratio, adv=False):
     loss_val = loss.item() / len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
     acc5 = 100 * correct5.item() / total.item()
-    #if is_clean:
-        #print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
 
     return acc1, loss_val
-
 
 
 def validate_corruption(data_path, info_path, model, transform, criterion, batch_size, val_ratio):
@@ -109,9 +97,10 @@ def validate_corruption(data_path, info_path, model, transform, criterion, batch
 
 def prepare_loader(split_data, info_path, batch_size, transform=None):
     if isinstance(split_data, (str, Path)):
-        split_data = ImageFolder(split_data, info_path, transform=transform)
+        split_data = ImageNetDG_10(split_data, info_path, transform=transform)
     data_loader = DataLoader(split_data, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
     return data_loader
+
 
 def main():
     empty_gpu()
@@ -121,24 +110,23 @@ def main():
     epochs = 5
     train_batch_size = 40  # 256 for base model
     val_batch_size = 80
-    lr = 1e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
+    lr = 1e-4
     rounds, nlr, lim = 3, 0.02, 1  # lim=3, nlr=0.1 # round=3
-    eps = 0.001  # 0.001
+    eps = 0.001
     adv = True
-    img_ratio = 0.1 # 0.02
+    img_ratio = 0.1
     train_ratio = 1.
     val_ratio = 1.
-    task = "imagenet"  # "imagenette"
+    task = "imagenet"
     save_path = Path("./output").joinpath(task)
     data_path = Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
     model_name = 'vit_base_patch16_224'
-    #model_name = 'resnet50'
-    #model_name = 'vit_base_patch16_224'
-    #model, patch_size, img_size, model_config = get_model_and_config(model_name, variant="dat", offline=False)
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=True)
+    model, patch_size, img_size, model_config = get_model_and_config(model_name,
+                                                                     ckpt_path="pretrained/vit_base_patch16_224-dat.pth.tar",
+                                                                     use_ema=True)
     model.cuda()
 
     m = model_name.split('_')[1]
@@ -160,37 +148,23 @@ def main():
     info_path = Path("info")
 
     held_out = 0.1
-    data_set = ImageFolder(data_path.joinpath('imagenet/train'), info_path, train_transform)
+    data_set = ImageNetDG_10(data_path.joinpath('imagenet/train'), info_path, train_transform)
     len_dev = int(held_out * len(data_set))
     len_train = len(data_set) - len_dev
     train_set, dev_set = torch.utils.data.random_split(data_set, (len_train, len_dev))
     train_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=8, pin_memory=True)
     img_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=8,
-                              pin_memory=True)
+                            pin_memory=True)
     dev_loader = prepare_loader(dev_set, info_path, val_batch_size)
 
-    """base_dataset = datasets.ImageFolder(data_path.joinpath('imagenet/train'), train_transform)
-    img_indices = torch.randperm(train_size)[:int(img_ratio * train_size)]
-    img_sampler = SubsetRandomSampler(img_indices)from utils import *
-    train_indices = torch.randperm(train_size)[:int(train_ratio * train_size)]
-    train_sampler = SubsetRandomSampler(train_indices)
-    img_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=img_sampler,
-                                             num_workers=16, pin_memory=True)
-    train_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=train_sampler,
-                                               num_workers=16, pin_memory=True)"""
-
-    """
-    val_dataset = hfai.datasets.ImageNet('val', transform=val_transform)
-    val_datasampler = DistributedSampler(val_dataset)
-    val_dataloader = val_dataset.loader(batch_size, sampler=val_datasampler, num_workers=4, pin_memory=True)"""
     val_transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
-    val_dataset = ImageFolder(data_path.joinpath('imagenet/val'), info_path, val_transform)
+    val_dataset = ImageNetDG_10(data_path.joinpath('imagenet/val'), info_path, val_transform)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size, shuffle=False, num_workers=16,
-    pin_memory=True)
+                                             pin_memory=True)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
@@ -246,7 +220,8 @@ def main():
         if dev_acc > best_acc:
             best_acc = dev_acc
             print(f'New Best Acc: {best_acc:.2f}%')
-            torch.save({"model_state_dict": model.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
+            torch.save({"model_state_dict": model.state_dict(), "best_epoch": epoch, "best_acc": best_acc},
+                       setting_path.joinpath("best_epoch"))
 
 
 if __name__ == '__main__':

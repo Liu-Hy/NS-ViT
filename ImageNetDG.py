@@ -1,3 +1,5 @@
+"""Custom dataset class for ImageNet-1k dataset and its OOD variants.
+Used with ffrecord format data on the HFAI server"""
 from typing import Callable, Optional
 from utils import SPLITS
 import pickle
@@ -26,6 +28,7 @@ Expected file organization:
             PART_00001.ffr
             ...
 """
+
 
 @register_dataset
 class ImageNetDG(BaseDataset):
@@ -64,17 +67,17 @@ class ImageNetDG(BaseDataset):
     """
 
     def __init__(
-        self,
-        split: str,
-        transform: Optional[Callable] = None,
-        check_data: bool = True,
+            self,
+            split: str,
+            transform: Optional[Callable] = None,
+            check_data: bool = True,
     ) -> None:
         super(ImageNetDG, self).__init__()
 
         assert split in SPLITS
         self.split = split
         self.transform = transform
-        #self.data_dir = Path("/media/techt/One Touch/ffrecord_data/")
+        # self.data_dir = Path("/media/techt/One Touch/ffrecord_data/")
         self.data_dir = Path("/private_dataset/ImageNet_DG/")
         self.fname = self.data_dir / f"{split}" / "ffrdata"
         self.reader = FileReader(self.fname, check_data)
@@ -105,4 +108,3 @@ class ImageNetDG(BaseDataset):
             transformed_samples.append((img, label))
 
         return transformed_samples
-

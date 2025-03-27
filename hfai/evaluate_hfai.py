@@ -27,9 +27,11 @@ from ffrecord.torch import DataLoader
 from ffrecord.torch.dataset import Subset
 dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
 
+
 def get_val_transform(config, split):
     normalize = transforms.Normalize(config['mean'], config['std'])
 
+    # ImageNet-C and ImageNet-Stylized are already 224 x 224 images
     if split in ["corruption", "stylized"]:
         val_transform = transforms.Compose([
             transforms.ToTensor(),
@@ -41,6 +43,7 @@ def get_val_transform(config, split):
             transforms.ToTensor(),
             normalize])
     return val_transform
+
 
 def main(local_rank, args):
     val_batch_size = 32
@@ -65,21 +68,13 @@ def main(local_rank, args):
     torch.cuda.set_device(local_rank)
 
     model_name = 'vit_base_patch16_224'
-    ckpt_path = 'pretrained/vit_base_patch16_224-dat.pth.tar'
+    ckpt_path = '../pretrained/vit_base_patch16_224-dat.pth.tar'
 
     print(f"=== Evaluating model {model_name} ===")
     model, patch_size, img_size, model_config = get_model_and_config(model_name, ckpt_path, use_ema=True)
     model.cuda()
     # model = hfai.nn.to_hfai(model)
     model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
-
-    normalize = transforms.Normalize(model_config['mean'], model_config['std'])
-
-    val_transform = transforms.Compose([
-        transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        normalize])
 
     criterion = nn.CrossEntropyLoss()
 
@@ -88,9 +83,9 @@ def main(local_rank, args):
     for split in SPLITS:
         if split != "train" and not split.startswith("c-"):
             if split == "adversarial":
-                mask = imagenet_a_wnids
+                mask = imagenet_a_mask
             elif split == "rendition":
-                mask = imagenet_r_wnids
+                mask = imagenet_r_mask
             else:
                 mask = None
             val_transform = get_val_transform(model_config, split)

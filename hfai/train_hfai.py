@@ -1,5 +1,6 @@
 """Multi-node training script on the HFAI server"""
 import haienv
+
 haienv.set_env('ns')
 
 import os
@@ -24,11 +25,14 @@ import hfai
 import hfai.distributed as dist
 from ffrecord.torch import DataLoader
 from ffrecord.torch.dataset import Subset
+
 dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
 
-#hfai.nn.functional.set_replace_torch()
 
-def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc, disable):
+# hfai.nn.functional.set_replace_torch()
+
+def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank,
+              start_step, best_acc, disable):
     model.train()
     iterator = tqdm(dataloader, position=0, disable=disable)
     epoch_loss = 0.
@@ -52,14 +56,6 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         loss.backward()
         optimizer.step()
         scheduler.step()
-        """if local_rank == 0 and step % 20 == 0:
-            if adv:
-                print(
-                    f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}, Consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
-                    flush=True)
-            else:
-                print(
-                    f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}', flush=True)"""
         epoch_loss += loss.item()
         iterator.set_postfix({"loss": round((epoch_loss / (step + 1)), 3)})
         if step % 100 == 0:
@@ -81,7 +77,6 @@ def validate(dataloader, model, criterion, val_ratio, adv=False, mask=None):
             outputs = model(samples)
             if mask is not None:
                 outputs[:, mask] = -float('inf')
-            # print(f'output shape: {outputs.shape}')
             loss += criterion(outputs, labels)
             _, preds = outputs.topk(5, -1, True, True)
             correct1 += torch.eq(preds[:, :1], labels.unsqueeze(1)).sum()
@@ -122,6 +117,7 @@ def validate_corruption(model, transform, criterion, batch_size, val_ratio):
     print(f"mCE: {mce:.2f}%, mean_err: {me}%", flush=True)
     return result
 
+
 def prepare_loader(split_data, batch_size, transform=None):
     if isinstance(split_data, str):
         split_data = ImageNetDG(split_data, transform=transform)
@@ -129,11 +125,12 @@ def prepare_loader(split_data, batch_size, transform=None):
     data_loader = DataLoader(split_data, batch_size=batch_size, sampler=data_sampler, num_workers=4, pin_memory=True)
     return data_loader
 
+
 def main(local_rank, args):
     # 超参数设置
     epochs = 10
-    train_batch_size = 16#16  # 256 for base model
-    val_batch_size = 16#16
+    train_batch_size = 16  # 16  # 256 for base model
+    val_batch_size = 16  # 16
     rounds = 3
     lr = args.lr  # When using SGD and StepLR, set to 0.001
     lim = args.lim
@@ -145,7 +142,7 @@ def main(local_rank, args):
     val_ratio = 1.
     save_path = Path("../output/hfai")
     data_path = Path("/var/lib/data")
-    #save_path.mkdir(exist_ok=True, parents=True)
+    # save_path.mkdir(exist_ok=True, parents=True)
 
     if args.debug:
         train_batch_size, val_batch_size = 2, 2
@@ -170,10 +167,11 @@ def main(local_rank, args):
     disable = (local_rank != 0)
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch16_224-dat'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, offline=True)
+    model_name = 'vit_base_patch16_224'
+    ckpt_path = "../pretrained/vit_base_patch16_224-dat.pth.tar"
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, ckpt_path=ckpt_path)
     model.cuda()
-    #model = hfai.nn.to_hfai(model)
+    # model = hfai.nn.to_hfai(model)
     model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
 
     m = model_name.split('_')[1]
@@ -226,7 +224,8 @@ def main(local_rank, args):
 
     ckpt_path = save_path.joinpath(setting + '_' + 'latest.pt')
     try:
-        start_epoch, start_step, others = hfai.checkpoint.init(model, optimizer, scheduler=scheduler, ckpt_path=ckpt_path)
+        start_epoch, start_step, others = hfai.checkpoint.init(model, optimizer, scheduler=scheduler,
+                                                               ckpt_path=ckpt_path)
     except RuntimeError:
         start_epoch, start_step, others = 0, 0, None
         print("Failed to load checkpoint, start from scratch instead.")
@@ -241,13 +240,15 @@ def main(local_rank, args):
         if adv:
             if delta_x is None:
                 print("---- Learning noise")
-                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio, disable)
+                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio,
+                                                      disable)
                 torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
         if local_rank == 0:
             print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc, disable)
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank,
+                  start_step, best_acc, disable)
         start_step = 0
         delta_x = None
         if local_rank == 0:
@@ -276,7 +277,9 @@ def main(local_rank, args):
                     best_acc = dev_acc
                     print(f'New Best Acc: {best_acc:.2f}%')
                     try:
-                        torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
+                        torch.save(
+                            {"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc},
+                            setting_path.joinpath("best_epoch"))
                     except FileExistsError:
                         print("File exists")
 
@@ -295,8 +298,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     hfai.multiprocessing.spawn(main, args=(args,), nprocs=ngpus)
-
-    """'lr': {'values': [3e-5, 1e-4, 3e-4, 1e-3]},
-    'lim': {'values': [0.3, 1, 3]},
-    'nlr': {'values': [0.003, 0.01, 0.03, 0.1]},
-    'eps': {'values': [0.001, 0.01, 0.1]},"""

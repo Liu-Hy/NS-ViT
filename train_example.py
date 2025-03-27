@@ -1,3 +1,5 @@
+"""HFAI official example of ImageNet training script"""
+
 import hfai_env
 hfai_env.set_env('202111')
 
@@ -132,7 +134,7 @@ def main(local_rank):
         if rank == 0 and local_rank == 0:
             if acc > best_acc:
                 best_acc = acc
-                print(f'New Best Acc: {100*acc:.2f}%!')
+                print(f'New Best Acc: {100 * acc:.2f}%!')
                 torch.save(model.module.state_dict(),
                            os.path.join(save_path, 'best.pt'))
 

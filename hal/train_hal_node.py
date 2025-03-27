@@ -13,7 +13,7 @@ from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 import torchattacks
 #from torchvision import transforms
-from custom_dataset import ImageFolder
+from ImageNetDG_10 import ImageNetDG_10
 
 from utils import *
 from tqdm import tqdm
@@ -21,22 +21,6 @@ from torch.utils.data import DataLoader
 import wandb
 
 
-"""# Define sweep config
-sweep_configuration = {
-    'method': 'bayes',
-    'name': 'sweep',
-    'metric': {'goal': 'maximize', 'name': 'dev_acc'},
-    'parameters':
-    {
-        'lr': {'values': [3e-5, 1e-4, 3e-4, 1e-3]},
-        'lim': {'values': [0.3, 1, 3]},
-        'nlr': {'values': [0.003, 0.01, 0.03, 0.1]},
-        'eps': {'values': [0.001, 0.01, 0.1]},
-     }
-}
-
-# Initialize sweep by passing in config. (Optional) Provide a name of the project.
-sweep_id = wandb.sweep(sweep=sweep_configuration, project='nullspace')"""
 
 def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch):
     model.train()
@@ -96,7 +80,6 @@ def validate(dataloader, model, criterion, val_ratio, adv=False):
     return acc1, loss_val
 
 
-
 def validate_corruption(data_path, info_path, model, transform, criterion, batch_size, val_ratio):
     result = dict()
     type_errors = []
@@ -124,12 +107,13 @@ def validate_corruption(data_path, info_path, model, transform, criterion, batch
 
 def prepare_loader(split_data, info_path, batch_size, transform=None):
     if isinstance(split_data, (str, Path)):
-        split_data = ImageFolder(split_data, info_path, transform=transform)
+        split_data = ImageNetDG_10(split_data, info_path, transform=transform)
     data_loader = DataLoader(split_data, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
     return data_loader
 
+
 def main(args):
-    #run = wandb.init(project="nullspace", group="hal")
+    # run = wandb.init(project="nullspace", group="hal")
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     # 超参数设置
     epochs = 10
@@ -141,11 +125,11 @@ def main(args):
     nlr = args.nlr
     eps = args.eps
     adv = True
-    img_ratio = 0.1 #0.02
-    train_ratio = 1. #0.1
-    val_ratio = 1. #0.05
+    img_ratio = 0.1  # 0.02
+    train_ratio = 1.  # 0.1
+    val_ratio = 1.  # 0.05
     save_path = Path("../output/hal")
-    data_path = Path("../../data") #Path("/var/lib/data")
+    data_path = Path("../../data")  # Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
 
     if args.debug:
@@ -178,7 +162,7 @@ def main(args):
     info_path = Path("../info")
 
     held_out = 0.1
-    data_set = ImageFolder(data_path.joinpath('imagenet/train'), info_path, train_transform)
+    data_set = ImageNetDG_10(data_path.joinpath('imagenet/train'), info_path, train_transform)
     len_dev = int(held_out * len(data_set))
     len_train = len(data_set) - len_dev
     train_set, dev_set = torch.utils.data.random_split(data_set, (len_train, len_dev))
@@ -191,7 +175,7 @@ def main(args):
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
-    val_set = ImageFolder(data_path.joinpath('imagenet/val'), info_path, val_transform)
+    val_set = ImageNetDG_10(data_path.joinpath('imagenet/val'), info_path, val_transform)
     val_loader = DataLoader(val_set, batch_size=val_batch_size, shuffle=False, num_workers=8, pin_memory=True)
 
     criterion = nn.CrossEntropyLoss().cuda()
@@ -244,7 +228,8 @@ def main(args):
         if dev_acc > best_acc:
             best_acc = dev_acc
             print(f'New Best Acc: {best_acc:.2f}%')
-            torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
+            torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc},
+                       setting_path.joinpath("best_epoch"))
 
     """wandb.log({
         'epoch': epoch,

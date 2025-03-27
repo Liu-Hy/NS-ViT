@@ -13,8 +13,8 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 import torchattacks
+from ImageNetDG_10 import ImageNetDG_10
 #from torchvision import transforms
-from custom_dataset import ImageFolder
 import torch.distributed as dist
 import argparse
 from utils import *
@@ -23,22 +23,6 @@ from torch.utils.data import DataLoader
 import wandb
 
 
-"""# Define sweep config
-sweep_configuration = {
-    'method': 'bayes',
-    'name': 'sweep',
-    'metric': {'goal': 'maximize', 'name': 'dev_acc'},
-    'parameters':
-    {
-        'lr': {'values': [3e-5, 1e-4, 3e-4, 1e-3]},
-        'lim': {'values': [0.3, 1, 3]},
-        'nlr': {'values': [0.003, 0.01, 0.03, 0.1]},
-        'eps': {'values': [0.001, 0.01, 0.1]},
-     }
-}
-
-# Initialize sweep by passing in config. (Optional) Provide a name of the project.
-sweep_id = wandb.sweep(sweep=sweep_configuration, project='nullspace')"""
 
 def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, gpu):
     model.train()
@@ -101,7 +85,6 @@ def validate(dataloader, model, criterion, val_ratio, adv=False):
     return acc1, loss_val
 
 
-
 def validate_corruption(data_path, info_path, model, transform, criterion, batch_size, val_ratio):
     result = dict()
     type_errors = []
@@ -129,10 +112,11 @@ def validate_corruption(data_path, info_path, model, transform, criterion, batch
 
 def prepare_loader(split_data, info_path, batch_size, transform=None):
     if isinstance(split_data, (str, Path)):
-        split_data = ImageFolder(split_data, info_path, transform=transform)
+        split_data = ImageNetDG_10(split_data, info_path, transform=transform)
     data_sampler = DistributedSampler(split_data)
     data_loader = DataLoader(split_data, batch_size=batch_size, sampler=data_sampler, num_workers=8, pin_memory=True)
     return data_loader
+
 
 def main(gpu, args):
     rank = args.nr * args.gpus + gpu
@@ -140,7 +124,7 @@ def main(gpu, args):
                             init_method='env://',
                             world_size=args.world_size,
                             rank=rank)
-    #run = wandb.init(project="nullspace", group="hal")
+    # run = wandb.init(project="nullspace", group="hal")
     torch.cuda.set_device(gpu)
     # 超参数设置
     epochs = 10
@@ -156,7 +140,7 @@ def main(gpu, args):
     train_ratio = 1.
     val_ratio = 1.
     save_path = Path("../output/hal")
-    data_path = Path("../../data") #Path("/var/lib/data")
+    data_path = Path("../../data")  # Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
 
     if args.debug:
@@ -190,12 +174,13 @@ def main(gpu, args):
     info_path = Path("../info")
 
     held_out = 0.1
-    data_set = ImageFolder(data_path.joinpath('imagenet/train'), info_path, train_transform)
+    data_set = ImageNetDG_10(data_path.joinpath('imagenet/train'), info_path, train_transform)
     len_dev = int(held_out * len(data_set))
     len_train = len(data_set) - len_dev
     train_set, dev_set = torch.utils.data.random_split(data_set, (len_train, len_dev))
     train_sampler = DistributedSampler(train_set)
-    train_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4, pin_memory=True)
+    train_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4,
+                              pin_memory=True)
     img_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4,
                             pin_memory=True)
     dev_loader = prepare_loader(dev_set, info_path, val_batch_size)
@@ -237,7 +222,8 @@ def main(gpu, args):
                 delta_x = torch.load(noise_path.joinpath(str(epoch)))['delta_x']
             else:
                 print("---- Learning noise")
-                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio, disable)
+                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio,
+                                                      disable)
                 if gpu == 0:
                     torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
                     print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
@@ -265,11 +251,13 @@ def main(gpu, args):
                 if dev_acc > best_acc:
                     best_acc = dev_acc
                     print(f'New Best Acc: {best_acc:.2f}%')
-                    torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
+                    torch.save(
+                        {"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc},
+                        setting_path.joinpath("best_epoch"))
 
 
 if __name__ == '__main__':
-    #main()
+    # main()
     os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
     os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
     parser = argparse.ArgumentParser()

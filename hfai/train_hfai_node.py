@@ -99,11 +99,13 @@ def validate_corruption(model, transform, criterion, batch_size, val_ratio):
     print(f"mCE: {mce:.2f}%, mean_err: {me}%", flush=True)
     return result
 
+
 def prepare_loader(split_data, batch_size, transform=None):
     if isinstance(split_data, str):
         split_data = ImageNetDG(split_data, transform=transform)
     data_loader = DataLoader(split_data, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
     return data_loader
+
 
 def main():
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -127,7 +129,7 @@ def main():
     model_name = 'vit_base_patch16_224-dat'
     model, patch_size, img_size, model_config = get_model_and_config(model_name, offline=True)
     model.cuda()
-    #model = hfai.nn.to_hfai(model)
+    # model = hfai.nn.to_hfai(model)
     model = nn.DataParallel(model)
 
     m = model_name.split('_')[1]
@@ -223,7 +225,8 @@ def main():
             best_acc = dev_acc
             print(f'New Best Acc: {best_acc:.2f}%')
             try:
-                torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
+                torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc},
+                           setting_path.joinpath("best_epoch"))
             except FileExistsError:
                 print("File exists")
 
