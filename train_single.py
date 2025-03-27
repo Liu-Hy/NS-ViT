@@ -1,3 +1,5 @@
+"""Single-gpu version to debug and run on local machine"""
+
 import os
 from pathlib import Path
 import torch
@@ -7,34 +9,13 @@ from torch.utils.data import SubsetRandomSampler
 from torch.utils.data.distributed import DistributedSampler
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
-#from torchvision import transforms, datasets
+#from torchvision import transforms
+import robustness
 from robustness import datasets
 from robustness.tools.imagenet_helpers import ImageNetHierarchy
 
-from utils import get_model_and_config, validate_encoder_noise, encoder_forward, empty_gpu
-from methods import encoder_level_noise, encoder_level_epsilon_noise
+from utils import *
 from tqdm import tqdm
-
-corruptions = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur',
-               'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate',
-               'jpeg_compression']
-
-alex = [88.6, 89.4, 92.3, 82.0, 82.6, 78.6, 79.8, 86.7, 82.7, 81.9, 56.5, 85.3, 64.6, 71.8, 60.7]
-
-
-def train(dataloader, model, criterion, optimizer, scheduler, epoch):
-    model.train()
-    for step, batch in enumerate(dataloader):
-        imgs, labels = [x.cuda(non_blocking=True) for x in batch]
-        outputs = model(imgs)
-        optimizer.zero_grad()
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        scheduler.step()
-        if step % 20 == 0:
-            print(f'Training Step: {step}, Loss: {loss.item()}', flush=True)
-
 
 def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
     model.train()
@@ -53,7 +34,6 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
             adv_loss = criterion(adv_outputs, labels)
             # adv_loss.backward()
             consistency = ((adv_outputs - outputs) ** 2).sum(dim=-1).mean()
-            #tot_loss = loss + adv_loss  # + consistency
             loss = loss + adv_loss  # + consistency
         loss.backward()
         optimizer.step()
@@ -70,7 +50,7 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
         iterator.set_postfix({"loss": round((epoch_loss / (step + 2)), 3)})
 
 
-def validate(data_path, model, class_ranges, criterion, batch_size, val_ratio, is_clean=False):
+def validate(data_path, model, class_ranges, criterion, batch_size, val_ratio):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
     """val_dataset = datasets.ImageFolder(data_path, transform)
@@ -96,54 +76,61 @@ def validate(data_path, model, class_ranges, criterion, batch_size, val_ratio, i
             correct5 += torch.eq(preds, labels.unsqueeze(1)).sum()
             total += samples.size(0)
 
-    loss_val = loss.item() / len(dataloader.dataset.targets) # should be like len(dataloader)
+    loss_val = loss.item() * batch_size / total.item() # should be like len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
     acc5 = 100 * correct5.item() / total.item()
-    if is_clean:
-        print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
+    #if is_clean:
+        #print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
 
     return 100 - acc1, loss_val
 
-
-def mean(l):
-    return sum(l) / len(l)
-
-
-def validate_all(data_path, model, class_ranges, criterion, batch_size, delta_x, val_ratio, device):
+def validate_single(data_path, model, class_ranges, criterion, batch_size, delta_x, val_ratio, device):
     model.eval()
-    es = []
-    # result = dict()
-    result = {"mce": 1.}
     # for type_path in sorted(data_path.iterdir()):
-    clean_path = data_path.joinpath("imagenet")
     """if delta_x is not None:
         print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
         corr_res = validate_encoder_noise(model, clean_path, transform, batch_size, delta_x, val_ratio, device)
         idx = torch.randperm(delta_x.nelement())
         t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
         incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)"""
-    clean_e, _ = validate(clean_path, model, class_ranges, criterion, batch_size, val_ratio, is_clean=True)
-    for typ in tqdm(corruptions, position=0, leave=True):
-        type_path = data_path.joinpath(f"imagenet-c/{typ}")
-        assert type_path in list(data_path.joinpath("imagenet-c").iterdir())
-        type_e = []
+    error, val_loss = validate(data_path, model, class_ranges, criterion, batch_size, val_ratio)
+    return error, val_loss
+
+
+def validate_corruption(data_path, model, class_ranges, criterion, batch_size, delta_x, val_ratio, device):
+    type_errors = []
+    result = {"mce": 1.}
+    for typ in tqdm(CORRUPTIONS, position=0, leave=True):
+        type_path = data_path.joinpath(f"{typ}")
+        assert type_path in list(data_path.iterdir())
+        errors = []
         for s in range(1, 6):
             s_path = type_path.joinpath(str(s))
             assert s_path in list(type_path.iterdir())
             s_e, _ = validate(s_path, model, class_ranges, criterion, batch_size, val_ratio)
-            type_e.append(s_e)
-        es.append(mean(type_e))
-    me = mean(es)
-    relative_es = [(e / al) for (e, al) in zip(es, alex)]
-    mce = 100 * mean(relative_es)
-    result["clean_e"] = clean_e
-    result["es"] = es
+            errors.append(s_e)
+        type_errors.append(get_mean(errors))
+    me = get_mean(type_errors)
+    relative_es = [(e / al) for (e, al) in zip(type_errors, ALEX)]
+    mce = 100 * get_mean(relative_es)
+    result["es"] = type_errors
     result["ces"] = relative_es
     result["me"] = me
     result["mce"] = mce
     print(f"mCE: {mce:.2f}%, mean_err: {me}%", flush=True)
     return result
 
+
+def validate_noise(data_path, model, class_ranges, criterion, transform, batch_size, delta_x, val_ratio, device):
+    model.eval()
+    # for type_path in sorted(data_path.iterdir()):
+    clean_path = data_path.joinpath("imagenet")
+    if delta_x is not None:
+        print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
+        corr_res = validate_encoder_noise(model, clean_path, transform, batch_size, delta_x, val_ratio, device)
+        idx = torch.randperm(delta_x.nelement())
+        t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
+        incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)
 
 def main():
     empty_gpu()
@@ -200,7 +187,7 @@ def main():
                                                                         balanced=True)
     print(label_map)
     #base_dataset = datasets.ImageFolder(data_path.joinpath('imagenet/train'), train_transform)
-    custom_dataset = datasets.CustomImageNet(in_path, class_ranges)
+    custom_dataset = robustness.datasets.CustomImageNet(in_path, class_ranges)
     img_loader, _ = custom_dataset.make_loaders(workers=16, batch_size=train_batch_size, subset=int(77237*img_ratio))
     train_loader, _ = custom_dataset.make_loaders(workers=16, batch_size=train_batch_size, subset=int(77237*train_ratio))
 
@@ -262,7 +249,8 @@ def main():
         adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x)
         # acc = validate(val_loader, model, criterion, epoch)
         print("---- Validating model")
-        rs = validate_all(data_path, model, class_ranges, criterion, val_batch_size, delta_x, val_ratio, device)
+        _ = validate_single(data_path.joinpath("imagenet"), model, class_ranges, criterion, val_batch_size, delta_x, val_ratio, device)
+        rs = validate_corruption(data_path.joinpath("corruption"), model, class_ranges, criterion, val_batch_size, delta_x, val_ratio, device)
         torch.save({"model_name": model_name, "epoch": epoch,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),

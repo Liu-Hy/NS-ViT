@@ -10,9 +10,21 @@ from dotenv import load_dotenv
 from timm.data import resolve_data_config
 from torch.utils.data import SubsetRandomSampler
 
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from tqdm import tqdm
 load_dotenv()
 
+CORRUPTIONS = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur',
+               'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate',
+               'jpeg_compression']
 
+SPLITS = ["train", "val", "adversarial", "damagenet", "rendition", "sketch", "v2"]
+for c in CORRUPTIONS:
+    for s in range(1, 6):
+        SPLITS.append("c-" + c + "-" + str(s))
+
+ALEX = [88.6, 89.4, 92.3, 82.0, 82.6, 78.6, 79.8, 86.7, 82.7, 81.9, 56.5, 85.3, 64.6, 71.8, 60.7]
 def parse_opts():
     parser = argparse.ArgumentParser(description='Nullspace robustness study of deep learning architectures')
     parser.add_argument('--arch', default=None, choices=['vit_base_patch32_224', 'vit_small_patch32_224',
@@ -74,6 +86,8 @@ def init_dataset(args, model_config):
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=128, shuffle=True, num_workers=32, pin_memory=True)
     return loader, val_loader
 
+def get_mean(l):
+    return sum(l) / len(l)
 
 def get_model_and_config(model_name, pretrained=True):
     print(f'{model_name} pretrained: {pretrained}')
@@ -104,6 +118,71 @@ def encoder_forward(model, x):
     x = blocks(x)  # what is blocks?
     x = norm(x)
     return model.pre_logits(x[:, 0])  # What is pre_logits?
+
+
+def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, device):
+    print(f"img size {img_size}")
+    model = model.to(device)
+    model.eval()
+    model.zero_grad()
+
+    #for param in model.parameters():
+        #param.requires_grad = False
+
+    patch_embed = model.patch_embed
+
+    with torch.no_grad():
+        _ = patch_embed(torch.rand(1, 3, img_size, img_size).to(device))
+        del_x_shape = _.shape
+
+    assert isinstance(lim, (float, int))
+    delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).to(device)
+    delta_x.requires_grad = True
+    print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
+
+    optimizer = AdamW([delta_x], lr=nlr)
+    scheduler = CosineAnnealingLR(optimizer, len(loader) * rounds)
+    #optimizer = SGD([delta_x], lr=eps, momentum=0.9, weight_decay=1e-4)
+    #scheduler = StepLR(optimizer, step_size=200, gamma=0.9)
+
+    #iterator = tqdm(range(rounds))
+    for i in range(rounds):
+        iterator = tqdm(loader, position=0, leave=True)
+        for st, (imgs, lab) in enumerate(iterator):
+            assert delta_x.requires_grad == True
+            imgs = imgs.to(device)
+
+            with torch.no_grad():
+                og_preds = model.head(model.forward_features(imgs))
+
+            #model.zero_grad()
+            optimizer.zero_grad()
+
+            x = patch_embed(imgs)
+            x = x + delta_x
+
+            preds = model.head(encoder_forward(model, x))
+
+            p_og = torch.softmax(og_preds, dim=-1)
+            p_alt = torch.softmax(preds, dim=-1)
+            mse_probs = (((p_og - p_alt) ** 2).sum(dim=-1)).mean()
+            if mse_probs < eps:
+                print(f"Image finished training at epoch {i} step {st}")
+                return delta_x
+
+            error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
+
+            # error_mult = ((preds - og_preds) ** 2).sum(dim=-1).mean()
+            # hinge = torch.max(torch.stack([error_mult - eps, torch.tensor(0)]))
+            error_mult.backward()
+            optimizer.step()
+            scheduler.step()
+
+            iterator.set_postfix({"error": round(error_mult.item(), 4)})
+        if not (i + 1) % 1:
+            print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}')
+
+    return delta_x
 
 
 def validate_encoder_noise(model, data_path, transform, batch_size, delta_x, val_ratio, device):
