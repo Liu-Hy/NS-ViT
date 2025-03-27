@@ -86,7 +86,7 @@ class ImageNetDG(BaseDataset):
         return self.reader.n
 
     def __getitem__(self, indices):
-
+        print(type(indices))
         imgs_bytes = self.reader.read(indices)
         samples = []
         for i, bytes_ in enumerate(imgs_bytes):

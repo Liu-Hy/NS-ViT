@@ -1,0 +1,1259 @@
+techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py
+cuda:0
+vit_base_patch32_224 pretrained: True
+{'input_size': (3, 224, 224), 'interpolation': 'bicubic', 'mean': (0.5, 0.5, 0.5), 'std': (0.5, 0.5, 0.5), 'crop_pct': 0.9}
+vit_base_patch32_224, 224x224, patch_size:32
+
+--------------------------------
+Enter epoch 0
+---- Learning noise
+img size 224
+Noise norm: 336.2746
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:11<1:22:46,  1.48s/it, error=22.4]Break img training at step 68
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:22<1:56:59,  2.09s/it, error=22.4]
+Noise trained for 1 epochs, error: 22.3766
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:05<1:15:06,  1.34s/it, error=15.5]Break img training at step 68
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:11<1:47:52,  1.93s/it, error=15.5]
+Noise trained for 2 epochs, error: 15.546
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [01:59<1:31:20,  1.63s/it, error=12.9]Break img training at step 68
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:06<1:44:21,  1.87s/it, error=12.9]
+Noise trained for 3 epochs, error: 12.8683
+Noise norm: 138.3137
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                        | 342/3421 [10:20<1:36:33,  1.88s/it, loss=1.26]Break training at step 342
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                        | 342/3421 [10:24<1:33:42,  1.83s/it, loss=1.26]
+---- Validating model
+Break evaluation at step 20
+Traceback (most recent call last):
+Break evaluation at step 8
+['val']
+Break evaluation at step 2
+Break evaluation at step 8
+['val']
+Break evaluation at step 6
+Break evaluation at step 8
+Break evaluation at step 2
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:36<08:28, 36.29s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:22<09:06, 42.01s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:12<09:10, 45.85s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+Break evaluation at step 2
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [02:46<07:34, 41.28s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Break evaluation at step 2
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [03:29<06:58, 41.87s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:07<06:04, 40.49s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [04:50<05:31, 41.39s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [05:36<04:58, 42.64s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [06:23<04:23, 43.95s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [06:59<03:28, 41.60s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [07:41<02:46, 41.72s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [08:15<01:57, 39.25s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [08:51<01:16, 38.48s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [09:32<00:39, 39.05s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [10:07<00:00, 40.49s/it]
+mCE: 35.16%, mean_err: 27.911458333333332%
+Dev acc: 85.5859375
+Avg performance: 63.285571640687294
+ {'val': 87.5, 'adversarial': 38.28125, 'damagenet': 80.6640625, 'rendition': 40.755208333333336, 'sketch': 52.83203125, 'v2': 78.125, 'corruption': 35.1585505985223}
+New Best Acc: 85.59%
+
+--------------------------------
+Enter epoch 1
+---- Learning noise
+img size 224
+Noise norm: 335.3305
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:05<1:09:00,  1.23s/it, error=7.29]Break img training at step 68
+Traceback (most recent call last):
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:16<1:51:59,  2.00s/it, error=7.29]
+Noise trained for 1 epochs, error: 7.2864
+  0%|▏                                                                                                                                                                                                                                                                                    | 3/3421 [00:07<1:47:14,  1.88s/it, error=6.43]Image finished training at epoch 1 step 3
+  0%|▏                                                                                                                                                                                                                                                                                    | 3/3421 [00:13<4:18:58,  4.55s/it, error=6.43]
+Noise norm: 190.1273
+---- Training model
+ 10%|███████████████████████████▍                                                                                                                                                                                                                                                       | 342/3421 [11:27<1:58:19,  2.31s/it, loss=0.985]Break training at step 342
+ 10%|███████████████████████████▍                                                                                                                                                                                                                                                       | 342/3421 [11:32<1:43:55,  2.03s/it, loss=0.985]
+---- Validating model
+Break evaluation at step 20
+Break evaluation at step 8
+['val']
+Break evaluation at step 2
+Break evaluation at step 8
+['val']
+Break evaluation at step 6
+Break evaluation at step 8
+Traceback (most recent call last):
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:46<10:53, 46.67s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:32<10:01, 46.27s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:21<09:27, 47.33s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [02:53<07:33, 41.26s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [03:35<06:54, 41.49s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:13<06:03, 40.39s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [04:59<05:37, 42.15s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [05:43<05:01, 43.01s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [06:30<04:24, 44.15s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [07:05<03:26, 41.22s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [07:43<02:40, 40.23s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [08:16<01:54, 38.01s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [08:54<01:16, 38.21s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [09:36<00:39, 39.09s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [10:14<00:00, 40.93s/it]
+mCE: 38.06%, mean_err: 30.4375%
+Dev acc: 84.8046875
+Avg performance: 61.656839583975504
+ {'val': 87.6953125, 'adversarial': 36.328125, 'damagenet': 78.61328125, 'rendition': 38.802083333333336, 'sketch': 50.48828125, 'v2': 77.734375, 'corruption': 38.06358124550486}
+
+--------------------------------
+Enter epoch 2
+---- Learning noise
+img size 224
+Noise norm: 336.2607
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:21<1:28:38,  1.59s/it, error=6.95]Break img training at step 68
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:32<2:05:40,  2.25s/it, error=6.95]
+Noise trained for 1 epochs, error: 6.9519
+  0%|▏                                                                                                                                                                                                                                                                                    | 2/3421 [00:06<2:46:24,  2.92s/it, error=6.32]Image finished training at epoch 1 step 2
+  0%|▏                                                                                                                                                                                                                                                                                    | 2/3421 [00:14<6:42:54,  7.07s/it, error=6.32]
+Noise norm: 206.9178
+---- Training model
+ 10%|███████████████████████████▍                                                                                                                                                                                                                                                       | 342/3421 [10:39<1:19:03,  1.54s/it, loss=0.979]Break training at step 342
+ 10%|███████████████████████████▍                                                                                                                                                                                                                                                       | 342/3421 [10:49<1:37:28,  1.90s/it, loss=0.979]
+---- Validating model
+Break evaluation at step 20
+Break evaluation at step 8
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+Break evaluation at step 8
+['val']
+Break evaluation at step 6
+Break evaluation at step 8
+Break evaluation at step 2
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:46<10:55, 46.83s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:39<10:53, 50.27s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:29<10:00, 50.06s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [03:06<08:15, 45.02s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [03:49<07:21, 44.14s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:28<06:21, 42.43s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [05:13<05:46, 43.34s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [05:58<05:07, 43.87s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [06:45<04:28, 44.73s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [07:20<03:29, 41.85s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [08:01<02:46, 41.71s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [08:36<01:58, 39.67s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+['val']
+Break evaluation at step 2
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [09:16<01:19, 39.58s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [10:00<00:40, 40.85s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [10:36<00:00, 42.46s/it]
+mCE: 41.41%, mean_err: 33.03125%
+Dev acc: 84.0234375
+Avg performance: 62.29019512449757
+ {'val': 86.328125, 'adversarial': 38.28125, 'damagenet': 79.39453125, 'rendition': 44.53125, 'sketch': 50.78125, 'v2': 78.125, 'corruption': 41.410040378516996}
+
+--------------------------------
+Enter epoch 3
+---- Learning noise
+img size 224
+Noise norm: 336.0783
+  2%|█████▎                                                                                                                                                                                                                                                                              | 66/3421 [02:09<2:24:10,  2.58s/it, error=6.47]Image finished training at epoch 0 step 66
+Traceback (most recent call last):
+  2%|█████▎                                                                                                                                                                                                                                                                              | 66/3421 [02:13<1:53:16,  2.03s/it, error=6.47]
+Noise norm: 220.2872
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                        | 342/3421 [10:33<1:36:14,  1.88s/it, loss=0.98]Break training at step 342
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                        | 342/3421 [10:39<1:35:55,  1.87s/it, loss=0.98]
+---- Validating model
+Break evaluation at step 20
+Break evaluation at step 8
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+Break evaluation at step 8
+Traceback (most recent call last):
+['val']
+Break evaluation at step 6
+Traceback (most recent call last):
+Break evaluation at step 8
+Break evaluation at step 2
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:53<12:27, 53.38s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:46<11:32, 53.25s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+['val']
+Break evaluation at step 2
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:41<10:46, 53.87s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [03:21<08:53, 48.49s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [04:07<07:57, 47.72s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:49<06:52, 45.81s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [05:40<06:19, 47.38s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+['val']
+Break evaluation at step 2
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [06:27<05:30, 47.21s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [07:15<04:45, 47.65s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [07:58<03:50, 46.16s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [08:43<03:02, 45.60s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [09:22<02:10, 43.63s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [10:03<01:25, 42.94s/it]['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [10:49<00:43, 43.72s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [11:27<00:00, 45.81s/it]
+mCE: 41.06%, mean_err: 32.947916666666664%
+Dev acc: 85.078125
+Avg performance: 62.46976914495299
+ {'val': 87.5, 'adversarial': 38.28125, 'damagenet': 78.80859375, 'rendition': 41.927083333333336, 'sketch': 52.1484375, 'v2': 79.6875, 'corruption': 41.064480568662404}
+
+--------------------------------
+Enter epoch 4
+---- Learning noise
+img size 224
+Noise norm: 336.4137
+  2%|█████▌                                                                                                                                                                                                                                                                                | 68/3421 [02:04<52:10,  1.07it/s, error=7.92]Break img training at step 68
+  2%|█████▍                                                                                                                                                                                                                                                                              | 68/3421 [02:15<1:51:06,  1.99s/it, error=7.92]
+Noise trained for 1 epochs, error: 7.9181
+  1%|███▍                                                                                                                                                                                                                                                                                | 43/3421 [01:20<1:23:45,  1.49s/it, error=6.44]Image finished training at epoch 1 step 43
+  1%|███▍                                                                                                                                                                                                                                                                                | 43/3421 [01:25<1:51:24,  1.98s/it, error=6.44]
+Noise norm: 201.5578
+---- Training model
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                        | 342/3421 [10:24<1:31:40,  1.79s/it, loss=0.97]Break training at step 342
+Traceback (most recent call last):
+ 10%|███████████████████████████▌                                                                                                                                                                                                                                                        | 342/3421 [10:32<1:34:57,  1.85s/it, loss=0.97]
+---- Validating model
+Break evaluation at step 20
+Break evaluation at step 8
+['val']
+Break evaluation at step 2
+Break evaluation at step 8
+['val']
+Break evaluation at step 6
+Break evaluation at step 8
+Traceback (most recent call last):
+Break evaluation at step 2
+  0%|                                                                                                                                                                                                                                                                                                             | 0/15 [00:00<?, ?it/s]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+  7%|███████████████████▌                                                                                                                                                                                                                                                                                 | 1/15 [00:46<10:49, 46.39s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 13%|███████████████████████████████████████                                                                                                                                                                                                                                                              | 2/15 [01:33<10:07, 46.73s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+ 20%|██████████████████████████████████████████████████████████▌                                                                                                                                                                                                                                          | 3/15 [02:22<09:36, 48.00s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+ 27%|██████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                                                                      | 4/15 [02:57<07:50, 42.75s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 33%|█████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                                                                   | 5/15 [03:36<06:54, 41.50s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+ 40%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                                               | 6/15 [04:15<06:03, 40.37s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+ 47%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                            | 7/15 [04:59<05:34, 41.79s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+['val']
+Break evaluation at step 2
+ 53%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                        | 8/15 [05:47<05:06, 43.78s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+ 60%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                     | 9/15 [06:35<04:30, 45.11s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                                 | 10/15 [07:13<03:33, 42.67s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 73%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                             | 11/15 [07:54<02:49, 42.43s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                          | 12/15 [08:30<02:00, 40.27s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 87%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                       | 13/15 [09:08<01:19, 39.71s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                   | 14/15 [09:52<00:41, 41.02s/it]['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+['val']
+Break evaluation at step 2
+Traceback (most recent call last):
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/queues.py", line 245, in _feed
+    send_bytes(obj)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 200, in send_bytes
+    self._send_bytes(m[offset:offset + size])
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 411, in _send_bytes
+    self._send(header + buf)
+  File "/home/techt/anaconda3/envs/lc/lib/python3.8/multiprocessing/connection.py", line 368, in _send
+    n = write(self._handle, buf)
+BrokenPipeError: [Errno 32] Broken pipe
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [10:30<00:00, 42.02s/it]
+mCE: 40.23%, mean_err: 32.1875%
+Dev acc: 83.7890625
+Avg performance: 59.89175243498733
+ {'val': 86.9140625, 'adversarial': 23.828125, 'damagenet': 80.37109375, 'rendition': 43.359375, 'sketch': 46.09375, 'v2': 78.90625, 'corruption': 40.23038920508867}

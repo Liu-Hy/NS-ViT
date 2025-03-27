@@ -57,7 +57,7 @@ def find_classes(directory: str, info_path: str) -> Tuple[List[str], Dict[str, i
             if idx in range_set:
                 mapping[class_name] = new_idx
 
-    filtered_classes = list(mapping.keys()).sort()
+    filtered_classes = sorted(list(mapping.keys()))
     return filtered_classes, mapping
 
 
@@ -126,7 +126,7 @@ def make_dataset(
         if extensions is not None:
             msg += f"Supported extensions are: {extensions if isinstance(extensions, str) else ', '.join(extensions)}"
         raise FileNotFoundError(msg)"""
-
+    assert len(instances) > 0, "The dataset cannot be empty!"
     return instances, sorted(available_classes)
 
 
@@ -170,7 +170,6 @@ class DatasetFolder(VisionDataset):
         super().__init__(root, transform=transform, target_transform=target_transform)
         classes, class_to_idx = self.find_classes(self.root, info_path)
         samples, available_classes = self.make_dataset(self.root, info_path, class_to_idx, extensions, is_valid_file)
-
         self.loader = loader
         self.extensions = extensions
 
@@ -347,6 +346,13 @@ class ImageFolder(DatasetFolder):
         loader: Callable[[str], Any] = default_loader,
         is_valid_file: Optional[Callable[[str], bool]] = None,
     ):
+        if isinstance(root, Path):
+            root = str(root)
+        if isinstance(info_path, Path):
+            info_path = str(info_path)
+        if len(os.listdir(root)) < 4 and "val" in os.listdir(root):
+            print(os.listdir(root))
+            root = os.path.join(root, "val")
         super().__init__(
             root,
             info_path,

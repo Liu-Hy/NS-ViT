@@ -5,7 +5,8 @@ import timm
 import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-import wandb
+from torch.nn.parallel import DistributedDataParallel
+#import wandb
 from dotenv import load_dotenv
 from timm.data import resolve_data_config
 from torch.utils.data import SubsetRandomSampler
@@ -103,42 +104,67 @@ def get_model_and_config(model_name, pretrained=True):
     print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
     return model, patch_size, img_size, config
 
-def validate_noise(data_path, model, class_ranges, criterion, transform, batch_size, delta_x, val_ratio, device):
+def get_model_and_config_offline(model_name):
+    print(f'{model_name}')
+    model = timm.create_model(model_name, checkpoint_path=os.path.join("models", model_name + ".npz"))
+    config = resolve_data_config({}, model=model)
+    print(config)
+    try:
+        patch_size = model.patch_embed.patch_size[0]
+        img_size = model.patch_embed.img_size[0]
+    except:
+        patch_size = 32
+        img_size = 224
+    print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
+    return model, patch_size, img_size, config
+
+def validate_noise(data_path, model, transform, batch_size, delta_x, val_ratio, device):
     model.eval()
+    if isinstance(model, DistributedDataParallel):
+        mdl = model.module
+    elif isinstance(model, torch.nn.Module):
+        mdl = model
     # for type_path in sorted(data_path.iterdir()):
     clean_path = data_path.joinpath("imagenet")
     if delta_x is not None:
         print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
-        corr_res = validate_encoder_noise(model, clean_path, transform, batch_size, delta_x, val_ratio, device)
+        corr_res = validate_encoder_noise(mdl, clean_path, transform, batch_size, delta_x, val_ratio, device)
         idx = torch.randperm(delta_x.nelement())
         t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
-        incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)
+        incorr_res = validate_encoder_noise(mdl, clean_path, transform, batch_size, t, val_ratio, device)
 
 def encoder_forward(model, x):
     # Concat CLS token to the patch embeddings,
     # Forward pass them through the model encoder to get the features of the CLS token.
-    cls_token = model.cls_token
-    pos_embed = model.pos_embed
-    pos_drop = model.pos_drop
-    blocks = model.blocks
-    norm = model.norm
+    if isinstance(model, DistributedDataParallel):
+        mdl = model.module
+    elif isinstance(model, torch.nn.Module):
+        mdl = model
+    cls_token = mdl.cls_token
+    pos_embed = mdl.pos_embed
+    pos_drop = mdl.pos_drop
+    blocks = mdl.blocks
+    norm = mdl.norm
 
     x = torch.cat((cls_token.expand(x.shape[0], -1, -1), x), dim=1)
     x = pos_drop(x + pos_embed)
     x = blocks(x)  # what is blocks?
     x = norm(x)
-    return model.pre_logits(x[:, 0])  # What is pre_logits?
+    return mdl.pre_logits(x[:, 0])  # What is pre_logits?
 
 
-def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps):
+def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, img_ratio):
     print(f"img size {img_size}")
     model.eval()
     model.zero_grad()
-
+    if isinstance(model, DistributedDataParallel):
+        mdl = model.module
+    elif isinstance(model, torch.nn.Module):
+        mdl = model
     #for param in model.parameters():
         #param.requires_grad = False
 
-    patch_embed = model.patch_embed
+    patch_embed = mdl.patch_embed
 
     with torch.no_grad():
         _ = patch_embed(torch.rand(1, 3, img_size, img_size).cuda(non_blocking=True))
@@ -146,43 +172,45 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps):
 
     delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).cuda(non_blocking=True)
     delta_x.requires_grad = True
-    print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
+    print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}", flush=True)
 
     optimizer = AdamW([delta_x], lr=nlr)
     scheduler = CosineAnnealingLR(optimizer, len(loader) * rounds)
 
     for i in range(rounds):
-        for st, (imgs, lab) in enumerate(loader):
+        iterator = tqdm(loader, position=0, leave=True)
+        for st, (imgs, lab) in enumerate(iterator):
             assert delta_x.requires_grad == True
+            if st > int(img_ratio * len(loader)) - 1:
+                break
             imgs = imgs.cuda(non_blocking=True)
 
             with torch.no_grad():
-                og_preds = model.head(model.forward_features(imgs))
+                og_preds = mdl.head(mdl.forward_features(imgs))
 
             optimizer.zero_grad()
 
             x = patch_embed(imgs)
             x = x + delta_x
 
-            preds = model.head(encoder_forward(model, x))
+            preds = mdl.head(encoder_forward(model, x))
 
             p_og = torch.softmax(og_preds, dim=-1)
             p_alt = torch.softmax(preds, dim=-1)
             mse_probs = (((p_og - p_alt) ** 2).sum(dim=-1)).mean()
             if mse_probs < eps:
-                print(f"Image finished training at epoch {i} step {st}")
+                print(f"Image finished training at epoch {i} step {st}", flush=True)
                 return delta_x
 
             error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
-
             # error_mult = ((preds - og_preds) ** 2).sum(dim=-1).mean()
             # hinge = torch.max(torch.stack([error_mult - eps, torch.tensor(0)]))
             error_mult.backward()
             optimizer.step()
             scheduler.step()
-
+            iterator.set_postfix({"error": round(error_mult.item(), 4)})
         if not (i + 1) % 1:
-            print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}')
+            print(f'Noise trained for {i+1} epochs, error: {round(error_mult.item(), 4)}', flush=True)
 
     return delta_x
 
@@ -203,15 +231,15 @@ def validate_encoder_noise(model, data_path, transform, batch_size, delta_x, val
     with torch.no_grad():
         for _, (imgs, _) in enumerate(loader):
             imgs = imgs.to(device)
-            og_feats = model.forward_features(imgs)
-            og_outs = model.head(og_feats)
+            og_feats = model.module.forward_features(imgs)
+            og_outs = model.module.head(og_feats)
             og_preds['feats'].append(og_feats.cpu())
             og_preds['outs'].append(og_outs.cpu())
 
-            x = model.patch_embed(imgs)
+            x = model.module.patch_embed(imgs)
             x += delta_x
             alt_feats = encoder_forward(model, x)
-            alt_outs = model.head(alt_feats)
+            alt_outs = model.module.head(alt_feats)
             alt_preds['feats'].append(alt_feats.cpu())
             alt_preds['outs'].append(alt_outs.cpu())
 
