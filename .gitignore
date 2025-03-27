@@ -7,3 +7,4 @@ outputs/
 data/
 artifacts/
 .env
+/old_outputs/
