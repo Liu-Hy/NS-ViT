@@ -151,7 +151,7 @@ def main(local_rank):
     model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat', offline=True)
     model.cuda()
     #model = hfai.nn.to_hfai(model)
-    model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
+    model = DistributedDataParallel(model.cuda(), device_ids=[local_rank], find_unused_parameters=True)
 
     m = model_name.split('_')[1]
     setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}' + \
@@ -252,7 +252,6 @@ def main(local_rank):
 
 if __name__ == '__main__':
     ngpus = torch.cuda.device_count()
-    os.environ[
-        "TORCH_DISTRIBUTED_DEBUG"
-    ] = "DETAIL"
+    os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
+    os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
     hfai.multiprocessing.spawn(main, args=(), nprocs=ngpus)

@@ -199,7 +199,7 @@ def main(gpu, args):
     scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs)
 
     # Wrap the model
-    model = nn.parallel.DistributedDataParallel(model, device_ids=[gpu])
+    model = nn.parallel.DistributedDataParallel(model, device_ids=[gpu], find_unused_parameters=True)
     best_acc = 0.
 
     # 训练、验证
@@ -225,7 +225,6 @@ def main(gpu, args):
             else:
                 print("---- Learning noise")
                 delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio)
-                # TODO: reduce and scatter
                 if gpu == 0:
                     torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
             if rank == 0:
@@ -276,6 +275,8 @@ def main(gpu, args):
 
 if __name__ == '__main__':
     #main()
+    os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
+    os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--nodes', default=2, type=int, metavar='N',
                         help='number of data loading workers (default: 1)')

@@ -234,6 +234,9 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
             p_og = torch.softmax(og_preds, dim=-1)
             p_alt = torch.softmax(preds, dim=-1)
             mse_probs = (((p_og - p_alt) ** 2).sum(dim=-1)).mean()
+            if isinstance(model, DistributedDataParallel):
+                dist.all_reduce(mse_probs)
+                mse_probs /= dist.get_world_size()
             if mse_probs < eps:
                 print(f"Image finished training at epoch {i} step {st}", flush=True)
                 return delta_x
