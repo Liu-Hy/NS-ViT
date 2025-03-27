@@ -1,5 +1,5 @@
-gen 1 xiangbi, zhishiba model de optimizer he scheduler huancheng wo gengkanshunyan de AdamW he Cosine
-from now on, lr huancheng 3e-4 le
+Compared to "log1", changed optimizer and scheduler to AdamW and cosine, better for Transformer model
+from now on, lr set to 3e-4
 
 ---------------
 

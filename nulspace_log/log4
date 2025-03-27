@@ -1,6 +1,8 @@
-from now on, sampling limit changed to 2
-round changed to 10
-
+epochs = 20
+batch_size = 50
+lr = 0.001
+rounds, nlr, lim = 10, 0.02, 2.0 (changed from now on)
+Use 10% of the training set to learn noise, but full set to train the model
 
 (hl) techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py
 cuda:0

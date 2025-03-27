@@ -1,17 +1,11 @@
-model de xunlian shiyong CV chuantongde :
-optimizer = SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-4)
-scheduler = StepLR(optimizer, step_size=30, gamma=0.9)
+Use the SGD and StepLR conventional for vision tasks
 
 epochs = 20
 batch_size = 50
 lr = 0.001
-
-image de xunlian:
 rounds, nlr, lim = 30, 0.02, 1.0
 
-traning set only select 10% for the training of both
-
-
+Use 10% of the training data to train the noise and models
 --------------
 
 (hl) techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py

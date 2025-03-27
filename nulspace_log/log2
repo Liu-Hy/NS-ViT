@@ -1,4 +1,4 @@
-ba consistency loss term geijiashangle
+Compared to "log1", added squared L2 consistency loss
 -------
 
 (hl) techt@techt-ROG-Strix-GA35DX-G35DX:~/Desktop/nullspace$ python train_single.py
