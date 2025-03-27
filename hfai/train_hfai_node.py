@@ -12,6 +12,8 @@ from torch.utils.data import SubsetRandomSampler
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 # from torchvision import transforms
+import torchattacks
+from torchattacks import AutoAttack
 from ImageNetDG import ImageNetDG
 
 from utils import *
@@ -54,17 +56,24 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
                     f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}', flush=True)
 
 
-def validate(dataloader, model, criterion, val_ratio):
+def validate(dataloader, model, criterion, val_ratio, mask=None, adv='none', eps=8/225):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
-    with torch.no_grad():
-        for step, batch in enumerate(dataloader):
-            if step > int(val_ratio * len(dataloader)):
-                break
-            samples, labels = [x.cuda(non_blocking=True) for x in batch]
-            # print(labels.shape, labels.max(), labels.min())
+    assert adv in ['none', 'FGSM', 'Linf', 'L2'], '{} is not supported!'.format(adv)
+    if adv == "FGSM":
+        attack = torchattacks.FGSM(model, eps=8 / 225)
+    elif adv != "none":
+        attack = AutoAttack(model, norm=adv, eps=eps, version='standard', n_classes=1000)
+    for step, batch in enumerate(dataloader):
+        if step > int(val_ratio * len(dataloader)):
+            break
+        samples, labels = [x.cuda(non_blocking=True) for x in batch]
+        if adv != "none":
+            samples = attack(samples, labels)
+        with torch.no_grad():
             outputs = model(samples)
-            # print(f'output shape: {outputs.shape}')
+            if mask is not None:
+                outputs[:, mask] = -float('inf')
             loss += criterion(outputs, labels)
             _, preds = outputs.topk(5, -1, True, True)
             correct1 += torch.eq(preds[:, :1], labels.unsqueeze(1)).sum()
@@ -126,8 +135,9 @@ def main():
     save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch16_224-dat'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, offline=True)
+    model_name = 'vit_base_patch16_224'
+    ckpt_path = "../pretrained/vit_base_patch16_224-dat.pth.tar"
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, ckpt_path=ckpt_path)
     model.cuda()
     # model = hfai.nn.to_hfai(model)
     model = nn.DataParallel(model)

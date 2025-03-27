@@ -1,4 +1,5 @@
-"""Evaluation script to run on the HFAI server"""
+"""Evaluation script to run on single node of HFAI server
+Compatible with AutoAttack"""
 import haienv
 haienv.set_env('ns')
 
@@ -18,7 +19,7 @@ from ImageNetDG import ImageNetDG
 import argparse
 from utils import *
 from tqdm import tqdm
-from train_hfai import validate, validate_corruption, prepare_loader
+from train_hfai_node import validate, validate_corruption, prepare_loader
 import models
 
 import hfai
@@ -45,7 +46,7 @@ def get_val_transform(config, split):
     return val_transform
 
 
-def main(local_rank, args):
+def main(args):
     val_batch_size = 32
     val_ratio = 1.
     save_path = Path("output/hfai")
@@ -54,19 +55,6 @@ def main(local_rank, args):
         val_batch_size = 2
         val_ratio = 0.01
 
-    ip = os.environ['MASTER_ADDR']
-    port = os.environ['MASTER_PORT']
-    hosts = int(os.environ['WORLD_SIZE'])  # 机器个数
-    rank = int(os.environ['RANK'])  # 当前机器编号
-    gpus = torch.cuda.device_count()  # 每台机器的GPU个数
-
-    # world_size是全局GPU个数，rank是当前GPU全局编号
-    dist.init_process_group(backend='nccl',
-                            init_method=f'tcp://{ip}:{port}',
-                            world_size=hosts * gpus,
-                            rank=rank * gpus + local_rank)
-    torch.cuda.set_device(local_rank)
-
     model_name = 'vit_base_patch16_224'
     ckpt_path = '../pretrained/vit_base_patch16_224-dat.pth.tar'
 
@@ -74,7 +62,7 @@ def main(local_rank, args):
     model, patch_size, img_size, model_config = get_model_and_config(model_name, ckpt_path, use_ema=True)
     model.cuda()
     # model = hfai.nn.to_hfai(model)
-    model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
+    model = nn.DataParallel(model)
 
     criterion = nn.CrossEntropyLoss()
 
@@ -105,18 +93,14 @@ def main(local_rank, args):
     c_transform = get_val_transform(model_config, "corruption")
     corruption_rs = validate_corruption(model, c_transform, criterion, val_batch_size, 1.)
     result["corruption"] = corruption_rs["mce"]
-    if rank == 0 and local_rank == 0:
-        print(result)
-        total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
-        print(f"Avg performance: {total}\n", result)
+    print(result)
+    total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
+    print(f"Avg performance: {total}\n", result)
 
 
 if __name__ == '__main__':
-    ngpus = torch.cuda.device_count()
-    os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
-    os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
     parser = argparse.ArgumentParser()
     parser.add_argument('-db', '--debug', action='store_true')
     parser.add_argument('--ckpt_path', type=str, default='none', help='checkpoint path')
     args = parser.parse_args()
-    hfai.multiprocessing.spawn(main, args=(args,), nprocs=ngpus)
+    main(args)
