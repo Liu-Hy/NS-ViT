@@ -2,11 +2,12 @@
 different networks, to see how the ns noise transfer across architectures. """
 
 import os
-import torch
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
+
 import fire
 import timm
+import torch
+import torchvision.datasets as datasets
+import torchvision.transforms as transforms
 from timm.data import resolve_data_config
 
 
@@ -19,18 +20,20 @@ def main():
     results = {}
     unnorm = lambda x, c, i: c['mean'][i] + x * c['std'][i]
 
-    models = ['vit_small_patch32_224', 'vit_base_patch32_224', 'resnet50', 'efficientnet_b0', 'mobilenetv3_small_050', 'swin_tiny_patch4_window7_224', 'convnext_tiny']
+    models = ['vit_small_patch32_224', 'vit_base_patch32_224', 'resnet50', 'efficientnet_b0', 'mobilenetv3_small_050',
+              'swin_tiny_patch4_window7_224', 'convnext_tiny']
     nets = [timm.create_model(m, pretrained=True) for m in models]
     sc = resolve_data_config({}, model=nets[0])
 
     for lim in [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 1.5, 2.0]:
-        nullnoise = torch.load(f'outputs/del_x_vit_small_patch32_224_eps_0.01_rounds_500_lim_{lim}.v1.pth')['delta_y'][0].detach().cpu()
+        nullnoise = torch.load(f'outputs/del_x_vit_small_patch32_224_eps_0.01_rounds_500_lim_{lim}.v1.pth')['delta_y'][
+            0].detach().cpu()
         results[lim] = {}
         nullnoise = torch.cat([unnorm(nullnoise[0], sc, 0).unsqueeze(0), unnorm(nullnoise[1], sc, 1).unsqueeze(0),
                                unnorm(nullnoise[2], sc, 2).unsqueeze(0)], dim=0)
         print('noise in img domain', torch.min(nullnoise), torch.max(nullnoise))
 
-    # validation
+        # validation
         for idx, model in enumerate(nets):
             model_config = resolve_data_config({}, model=model)
             model = model.to(device)
@@ -63,4 +66,3 @@ def main():
 
 if __name__ == '__main__':
     fire.Fire(main)
-

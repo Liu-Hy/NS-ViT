@@ -1,10 +1,11 @@
 import os
-import wandb
+
 import torch
+import wandb
 from dotenv import load_dotenv
+
 load_dotenv()
 os.makedirs('artifact/', exist_ok=True)
-
 
 wandb.login(key=os.getenv('KEY'))
 artifact = wandb.Artifact('input', type='dataset')

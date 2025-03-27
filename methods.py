@@ -1,4 +1,5 @@
 import torch
+
 from utils import encoder_forward
 
 
@@ -52,7 +53,7 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
             x = x + delta_x
 
             preds = model.head(encoder_forward(model, x))
-            error_mult = (((preds-og_preds)**2).sum(dim=-1)**0.5).mean()
+            error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
             error_mult.backward()
             grad = delta_x.grad.data
             with torch.no_grad():
@@ -79,7 +80,7 @@ def image_level_nullnoise(model, loader, args, logger, lim, delta_x, device):
 
     # del_x_shape = (1, 3, img_size, img_size)
     print('Starting magnitude', delta_x.shape, (((delta_x.squeeze(0)) ** 2).sum(dim=0) ** 0.5).mean())
-   
+
     eps = args.eps
     step = 0
     for i in range(args.epochs):
@@ -95,7 +96,7 @@ def image_level_nullnoise(model, loader, args, logger, lim, delta_x, device):
             imgs = imgs + delta_x
 
             preds = model(imgs)
-            error_mult = (((preds-og_preds)**2).sum(dim=-1)**0.5).mean()
+            error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
             error_mult.backward()
             grad = delta_x.grad.data
             with torch.no_grad():

@@ -1,19 +1,23 @@
-import timm
-from timm.data import resolve_data_config
-import torch
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-import os
-import wandb
 import argparse
+import os
+
+import timm
+import torch
+import torchvision.datasets as datasets
+import torchvision.transforms as transforms
+import wandb
 from dotenv import load_dotenv
+from timm.data import resolve_data_config
+
 load_dotenv()
+
 
 def parse_opts():
     parser = argparse.ArgumentParser(description='Nullspace robustness study of deep learning architectures')
     parser.add_argument('--arch', default=None, choices=['vit_base_patch32_224', 'vit_small_patch32_224',
                                                          'vit_large_patch32_224', 'swin_tiny_patch4_window7_224',
-                                                         'resnet50', 'efficientnet_b0', 'convnext_tiny', 'mobilenetv3_small'
+                                                         'resnet50', 'efficientnet_b0', 'convnext_tiny',
+                                                         'mobilenetv3_small'
                                                          ], help='Neural network architecture')
     parser.add_argument('--output', default=None, help='Directory to save the output of a run!')
     parser.add_argument('--data', default=None, help='Path to the data files!')
@@ -23,7 +27,8 @@ def parse_opts():
     parser.add_argument('--eps', default=0.01, help='learning rate for optimisation')
     parser.add_argument('--milestones', nargs='+', default=[150, 300, 400])
     parser.add_argument('--batch-size', default=256)
-    parser.add_argument('--lims', nargs='+', default=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 1.5, 2.0], help='Picks the pre-saved starting noise from the artifact')
+    parser.add_argument('--lims', nargs='+', default=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 1.5, 2.0],
+                        help='Picks the pre-saved starting noise from the artifact')
     return parser.parse_args()
 
 
@@ -31,7 +36,7 @@ def init_wandb(args):
     is_resume = False
     wandb_logger = None
 
-    #resuming a run!
+    # resuming a run!
     if os.path.exists(args.output):
         is_resume = "must",
         run_id = open(f"{args.output}/run.id", 'r').read()
@@ -70,9 +75,9 @@ def get_model_and_config(model_name, pretrained=True):
         patch_size = model.patch_embed.patch_size[0]
         img_size = model.patch_embed.img_size[0]
     except:
-      patch_size = 32
-      img_size = 224
-    print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}' )
+        patch_size = 32
+        img_size = 224
+    print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
     return model, patch_size, img_size, config
 
 
@@ -137,7 +142,8 @@ def validate_by_parts(model, loader, delta_x, device):
 
     print(
         f'MSE FEATS: {mse_feats.item():.4f}\t MSE LOGITS: {mse_logits.item():.4f}\t MSE PROBS: {mse_probs.item():.4f}\t ABS MAX PROB: {abs_conf.item():.4f}\t MSE MAX PROB: {mse_conf.item():.4f}\t EQ CLS: {uneq:.4f}')
-    return dict(mse_feats=mse_feats.item(), mse_logits=mse_logits.item(), mse_probs=mse_probs.item(), abs_conf=abs_conf.item(), mse_conf=mse_conf.item(), eq=uneq)
+    return dict(mse_feats=mse_feats.item(), mse_logits=mse_logits.item(), mse_probs=mse_probs.item(),
+                abs_conf=abs_conf.item(), mse_conf=mse_conf.item(), eq=uneq)
 
 
 def validate_complete(model, loader, delta_x, device):
