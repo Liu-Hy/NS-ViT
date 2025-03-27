@@ -46,40 +46,52 @@ def main(local_rank, args):
                             rank=rank * gpus + local_rank)
     torch.cuda.set_device(local_rank)
 
-    model_name = 'vit_base_patch16_224'
-    #ckpt_path = "base_ps16_epochs10_lr0.0001_bs16_adv_True_nlr0.1_rounds3_lim3_eps0.01_imgr0.1_trainr1.0_valr1.0/model/7"
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=(args.ckpt_path=="none"), offline=True)
-    if args.ckpt_path != "none":
-        checkpoint = torch.load(save_path.joinpath(args.ckpt_path))
-        model.load_state_dict(checkpoint["model_state_dict"])
-    model.cuda()
-    # model = hfai.nn.to_hfai(model)
-    model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
+    #model_nms = os.listdir("./pretrained")
+    model_nms = ['vit_base_patch16_224', 'vit_base_patch32_224',
+     'vit_base_patch16_224-drvit', 'vit_base_patch16_224-dat', 'vit_base_patch16_224-rvt-s']
+    for model_name in model_nms:
+        if "drvit" in model_name or "rvt" in model_name:
+            break
+        print(f"=== Evaluating model {model_name} ===")
+        #model_name = 'vit_base_patch16_224-dat'
+        #ckpt_path = "base_ps16_epochs10_lr0.0001_bs16_adv_True_nlr0.1_rounds3_lim3_eps0.01_imgr0.1_trainr1.0_valr1.0/model/7"
+        model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=(args.ckpt_path=="none"), offline=True)
+        if args.ckpt_path != "none":
+            checkpoint = torch.load(save_path.joinpath(args.ckpt_path))
+            model.load_state_dict(checkpoint["model_state_dict"])
+        model.cuda()
+        # model = hfai.nn.to_hfai(model)
+        model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
 
-    val_transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(model_config['mean'], model_config['std'])])
+        val_transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(model_config['mean'], model_config['std'])])
 
-    criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss()
 
-    result = dict()
-    # Evaluate on val and OOD datasets except imagenet-c
-    for split in SPLITS:
-        if split != "train" and not split.startswith("c-"):
-            val_loader = prepare_loader(split, val_batch_size, val_transform)
-            acc, _ = validate(val_loader, model, criterion, val_ratio)
-            result[split] = acc
-            if split == "val":
-                result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
-    # Evaluate on imagenet-c
-    corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, val_ratio)
-    result["corruption"] = corruption_rs["mce"]
-    print(result)
-    if rank == 0 and local_rank == 0:
-        total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
-        print(f"Avg performance: {total}\n", result)
+        result = dict()
+
+        # Evaluate on val and OOD datasets except imagenet-c
+        for split in SPLITS:
+            if split != "train" and not split.startswith("c-"):
+                if split == "val":
+                    dts = hfai.datasets.ImageNet('val', transform=val_transform)
+                    val_loader = prepare_loader(dts, val_batch_size)
+                else:
+                    val_loader = prepare_loader(split, val_batch_size, val_transform)
+                acc, _ = validate(val_loader, model, criterion, val_ratio)
+                result[split] = acc
+                if split == "val":
+                    result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
+        # Evaluate on imagenet-c
+        corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, 0.1)
+        result["corruption"] = corruption_rs["mce"]
+        if rank == 0 and local_rank == 0:
+            print(result)
+            total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
+            print(f"Avg performance: {total}\n", result)
 
 
 if __name__ == '__main__':

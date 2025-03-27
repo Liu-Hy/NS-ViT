@@ -105,6 +105,7 @@ def get_model_and_config(model_name, pretrained=True, model_dir="pretrained", of
     ...
     """
     file_names = os.listdir(model_dir)
+    # print(f"current working dir: {os.getcwd()} file names: {file_names}")
     models = [f.split(".")[0] for f in file_names]
     model_type = model_name.split("-")[0]
     if not pretrained:
@@ -202,7 +203,6 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).cuda(non_blocking=True)
     if isinstance(model, DistributedDataParallel):
         dist.broadcast(delta_x, 0)
-        print(f"Delta_x after broadcast: {delta_x}")
         #dist.barrier()
     # TODO: when called by hfai script, should it use hfai.distributed.broadcast instead?
     delta_x.requires_grad = True

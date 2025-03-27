@@ -126,9 +126,11 @@ def main(local_rank, args):
     epochs = 10
     train_batch_size = 16#16  # 256 for base model
     val_batch_size = 16#16
-    lr = 1e-4  # When using SGD and StepLR, set to 0.001
-    rounds, nlr, lim = 3, 0.1, 3  # lim=1.0, nlr=0.02
-    eps = 0.01  # 0.001
+    rounds = 3
+    lr = args.lr  # When using SGD and StepLR, set to 0.001
+    lim = args.lim
+    nlr = args.nlr
+    eps = args.eps
     adv = True
     img_ratio = 0.1
     train_ratio = 1.
@@ -154,6 +156,9 @@ def main(local_rank, args):
                             world_size=hosts * gpus,
                             rank=rank * gpus + local_rank)
     torch.cuda.set_device(local_rank)
+
+    if rank == 0 and local_rank == 0:
+        print(args)
 
     # 模型、数据、优化器
     model_name = 'vit_base_patch16_224-dat'
@@ -268,7 +273,18 @@ if __name__ == '__main__':
     ngpus = torch.cuda.device_count()
     os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
     os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-db', '--debug', action='store_true')
+    parser.add_argument('--lr', type=float, default=1e-4, help='learning rate for updating network')
+    parser.add_argument('--lim', type=float, default=3, help='sampling limit of the noise')
+    parser.add_argument('--nlr', type=float, default=0.1, help='learning rate for the noise')
+    parser.add_argument('--eps', type=float, default=0.01, help='threshold to stop training the noise')
+
     args = parser.parse_args()
     hfai.multiprocessing.spawn(main, args=(args,), nprocs=ngpus)
+
+    """'lr': {'values': [3e-5, 1e-4, 3e-4, 1e-3]},
+    'lim': {'values': [0.3, 1, 3]},
+    'nlr': {'values': [0.003, 0.01, 0.03, 0.1]},
+    'eps': {'values': [0.001, 0.01, 0.1]},"""

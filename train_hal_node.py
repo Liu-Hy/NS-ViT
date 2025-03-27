@@ -126,16 +126,18 @@ def prepare_loader(split_data, info_path, batch_size, transform=None):
     data_loader = DataLoader(split_data, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
     return data_loader
 
-def main():
+def main(args):
     #run = wandb.init(project="nullspace", group="hal")
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     # 超参数设置
     epochs = 10
     train_batch_size = 128  # 256 for base model
     val_batch_size = 128
-    rounds, nlr, lim = 3, 0.1, 3
-    lr = 3e-5  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    eps = 0.01
+    rounds = 3
+    lr = args.lr  # When using SGD and StepLR, set to 0.001
+    lim = args.lim
+    nlr = args.nlr
+    eps = args.eps
     adv = True
     img_ratio = 0.1 #0.02
     train_ratio = 1. #0.1
@@ -247,5 +249,12 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    #wandb.agent(sweep_id, function=main, count=4)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-db', '--debug', action='store_true')
+    parser.add_argument('--lr', type=float, default=1e-4, help='learning rate for updating network')
+    parser.add_argument('--lim', type=float, default=3, help='sampling limit of the noise')
+    parser.add_argument('--nlr', type=float, default=0.1, help='learning rate for the noise')
+    parser.add_argument('--eps', type=float, default=0.01, help='threshold to stop training the noise')
+
+    args = parser.parse_args()
+    main(args)

@@ -92,7 +92,7 @@ class ImageNetDG(BaseDataset):
             datum = pickle.loads(bytes_)
             if isinstance(datum, tuple):
                 datum = datum[0]
-                print("wrong type tuple")
+                print(f"{self.split} wrong type tuple")
             img = datum.convert("RGB")
             label = self.meta["targets"][indices[i]]
             samples.append((img, int(label)))
