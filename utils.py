@@ -139,6 +139,9 @@ def get_model_and_config(model_name, pretrained=True, model_dir="../pretrained",
             raise ValueError("This checkpoint likely doesn't exist in Timm. Please download it in advance")
         model = timm.create_model(model_type, pretrained=True)
     config = resolve_data_config({}, model=model)
+    if "-" in model_name:
+        config["mean"] = [0.485, 0.456, 0.406]
+        config["std"] = [0.229, 0.224, 0.225]
     print(config)
     try:
         patch_size = model.patch_embed.patch_size[0]

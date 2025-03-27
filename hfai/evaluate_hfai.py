@@ -67,23 +67,19 @@ def main(local_rank, args):
         model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
 
         if "-" in model_name:
-            val_transform = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
-                #transforms.Normalize(model_config['mean'], model_config['std'])])
+            normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         else:
-            val_transform = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(model_config['mean'], model_config['std'])])
+            normalize = transforms.Normalize(model_config['mean'], model_config['std'])
+
+        val_transform = transforms.Compose([
+            transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            normalize])
 
         criterion = nn.CrossEntropyLoss()
 
         result = dict()
-
         # Evaluate on val and OOD datasets except imagenet-c
         for split in SPLITS:
             if split != "train" and not split.startswith("c-"):

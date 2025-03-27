@@ -6,7 +6,7 @@ do
     do
       for d in 0.01 0.1
       do
-        python3 train_hal_node.py  --lr $a  --lim $b  --nlr $c  --eps $d  --debug
+        python3 train_hal_node.py  --lr $a  --lim $b  --nlr $c  --eps $d
       done
     done
   done

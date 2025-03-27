@@ -1,6 +1,8 @@
 """Single-node training script on the HAL server"""
 
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 import torch
 from torch import nn
@@ -145,6 +147,10 @@ def main(args):
     save_path = Path("../output/hal")
     data_path = Path("../../data") #Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
+
+    if args.debug:
+        train_batch_size, val_batch_size = 2, 2
+        img_ratio, train_ratio, val_ratio = 0.001, 0.001, 0.1
 
     # 模型、数据、优化器
     model_name = 'vit_base_patch16_224-dat'

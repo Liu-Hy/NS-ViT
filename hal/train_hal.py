@@ -1,6 +1,8 @@
 """Multi-node training script on the HAL server"""
 
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 import torch
 from torch import nn
@@ -10,6 +12,7 @@ from torch.utils.data import SubsetRandomSampler
 from torch.utils.data.distributed import DistributedSampler
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
+import torchattacks
 #from torchvision import transforms
 from custom_dataset import ImageFolder
 import torch.distributed as dist
@@ -68,15 +71,18 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
                     f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}', flush=True)
 
 
-def validate(dataloader, model, criterion, val_ratio):
+def validate(dataloader, model, criterion, val_ratio, adv=False):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
-    with torch.no_grad():
-        for step, batch in enumerate(dataloader):
-            if step > int(val_ratio * len(dataloader)):
-                break
-            samples, labels = [x.cuda(non_blocking=True) for x in batch]
-            # print(labels.shape, labels.max(), labels.min())
+    if adv:
+        attack = torchattacks.FGSM(model, eps=8 / 225)
+    for step, batch in enumerate(dataloader):
+        if step > int(val_ratio * len(dataloader)):
+            break
+        samples, labels = [x.cuda(non_blocking=True) for x in batch]
+        if adv:
+            samples = attack(samples, labels)
+        with torch.no_grad():
             outputs = model(samples)
             # print(f'output shape: {outputs.shape}')
             loss += criterion(outputs, labels)
@@ -137,18 +143,18 @@ def main(gpu, args):
     #run = wandb.init(project="nullspace", group="hal")
     torch.cuda.set_device(gpu)
     # 超参数设置
-    epochs = 5
-    train_batch_size = 16#16  # 256 for base model
-    val_batch_size = 16#16
+    epochs = 10
+    train_batch_size = 8  # 256 for base model
+    val_batch_size = 8
     rounds = 3
-    lr = 3e-5  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    lim = 3
-    nlr = 0.1
-    eps = 0.01
+    lr = args.lr  # When using SGD and StepLR, set to 0.001
+    lim = args.lim
+    nlr = args.nlr
+    eps = args.eps
     adv = True
-    img_ratio = 0.1 #0.02
-    train_ratio = 1. #0.1
-    val_ratio = 1. #0.05
+    img_ratio = 0.1
+    train_ratio = 1.
+    val_ratio = 1.
     save_path = Path("../output/hal")
     data_path = Path("../../data") #Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
@@ -156,6 +162,8 @@ def main(gpu, args):
     if args.debug:
         train_batch_size, val_batch_size = 2, 2
         img_ratio, train_ratio, val_ratio = 0.001, 0.001, 0.1
+
+    disable = (gpu != 0)
 
     # 模型、数据、优化器
     model_name = 'vit_base_patch16_224-dat'
@@ -197,6 +205,8 @@ def main(gpu, args):
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
+    typ_path = data_path.joinpath("imagenet", "val")
+    val_loader = prepare_loader(typ_path, info_path, val_batch_size, val_transform)
 
     criterion = nn.CrossEntropyLoss().cuda(gpu)
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
@@ -222,37 +232,25 @@ def main(gpu, args):
     for epoch in range(start_epoch, epochs):
         train_sampler.set_epoch(epoch)
         if adv:
-            # delta_x = encoder_level_noise(model, img_loader, rounds, nlr, lim=lim, device=device)
             if Path.exists(noise_path.joinpath(str(epoch))):
                 print(f"Loading learned noise at epoch {epoch}")
                 delta_x = torch.load(noise_path.joinpath(str(epoch)))['delta_x']
             else:
                 print("---- Learning noise")
-                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio)
+                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio, disable)
                 if gpu == 0:
                     torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
-            if rank == 0:
-                print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
+                    print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
         print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio)
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, gpu, disable)
         print("---- Validating model")
         result = dict()
         # Evaluate on held-out set
         dev_acc, _ = validate(dev_loader, model, criterion, val_ratio)
-        # Evaluate on val and OOD datasets except imagenet-c
-        for split in SPLITS:
-            if split != "train" and not split.startswith("c-"):
-                if split == "val":
-                    typ_path = data_path.joinpath("imagenet", split)
-                else:
-                    typ_path = data_path.joinpath(split)
-                val_loader = prepare_loader(typ_path, info_path, val_batch_size, val_transform)
-                acc, _ = validate(val_loader, model, criterion, val_ratio)
-                result[split] = acc
-        # Evaluate on imagenet-c
-        corruption_rs = validate_corruption(data_path.joinpath("corruption"), info_path, model, val_transform, criterion, val_batch_size, val_ratio)
-        result["corruption"] = corruption_rs["mce"]
+        # Evaluate on val set
+        val_acc, _ = validate(val_loader, model, criterion, val_ratio)
+        result["val"] = val_acc
         if gpu == 0:
             torch.save({"model_name": model_name, "epoch": epoch,
                         "model_state_dict": model.module.state_dict(),
@@ -269,13 +267,6 @@ def main(gpu, args):
                     print(f'New Best Acc: {best_acc:.2f}%')
                     torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
 
-        """wandb.log({
-            'epoch': epoch,
-            'dev_acc': dev_acc,
-            'total': total,
-            'mce': corruption_rs["mce"],
-        })"""
-
 
 if __name__ == '__main__':
     #main()
@@ -289,7 +280,11 @@ if __name__ == '__main__':
     parser.add_argument('-nr', '--nr', default=0, type=int,
                         help='ranking within the nodes')
     parser.add_argument('-db', '--debug', action='store_true')
+    parser.add_argument('--lr', type=float, default=1e-4, help='learning rate for updating network')
+    parser.add_argument('--lim', type=float, default=3, help='sampling limit of the noise')
+    parser.add_argument('--nlr', type=float, default=0.1, help='learning rate for the noise')
+    parser.add_argument('--eps', type=float, default=0.01, help='threshold to stop training the noise')
+
     args = parser.parse_args()
     args.world_size = args.gpus * args.nodes
     mp.spawn(main, args=(args,), nprocs=args.gpus)
-    #wandb.agent(sweep_id, function=main, count=4)

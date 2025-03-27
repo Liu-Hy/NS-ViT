@@ -25,24 +25,26 @@ def main(args):
     info_path = Path("info")
 
     if args.debug:
-        val_batch_size = 2
+        val_batch_size = 128
         val_ratio = 0.01
 
     model_name = 'vit_base_patch16_224-dat'
-    #ckpt_path = "base_ps16_epochs10_lr0.0001_bs16_adv_True_nlr0.1_rounds3_lim3_eps0.01_imgr0.1_trainr1.0_valr1.0/model/7"
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=(args.ckpt_path=="none"))
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=(args.ckpt_path=="none"), model_dir="pretrained")
     if args.ckpt_path != "none":
         checkpoint = torch.load(save_path.joinpath(args.ckpt_path))
         model.load_state_dict(checkpoint["model_state_dict"])
     model.cuda()
-    # model = hfai.nn.to_hfai(model)
-    # model = nn.DataParallel(model)
+
+    if "-" in model_name:
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    else:
+        normalize = transforms.Normalize(model_config['mean'], model_config['std'])
 
     val_transform = transforms.Compose([
-        transforms.Resize(256),
+        transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(model_config['mean'], model_config['std'])])
+        normalize])
 
     criterion = nn.CrossEntropyLoss()
 
@@ -56,7 +58,6 @@ def main(args):
             result[split] = acc
             if split == "val":
                 result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
-            print(result)
     # Evaluate on imagenet-c
     corruption_rs = validate_corruption(data_path.joinpath("corruption"), info_path, model, val_transform, criterion, val_batch_size, val_ratio)
     result["corruption"] = corruption_rs["mce"]
