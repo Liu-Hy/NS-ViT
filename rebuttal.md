@@ -60,3 +60,53 @@ the current SOTA on ViT-B, which showed the effectiveness of our methods. Compar
 >I believe a much clearer intuition, a set of more robust results and a major rewriting of the paper is necessary
 ## Response to reviewer VJsT
 
+> ... The core of the idea in this paper is then a method to approximate the largest noise such that the model output (measure via the loss) is invariant that is not at all vision transformer specific nor theoretically grounded.
+
+> The introduction is quite lengthy and involves several paragraph of generic discussions of vision transformers  ...
+
+> Section 3: while it's interesting that the linear patch embedding allows us to describe the null space in terms of strict invariance, this analysis is no longer valid when we consider the entire model ...
+
+Respectfully, we maintain that the study of linear patch embedding is important. This is because the nullspace of linear patch embedding is also the exact nullspace of the entire model as well.
+
+> ... How does this method compare against training on random epsilon noise?
+
+>  I suggest the authors tone down the claim “unexplored concept of nullspace…” ...
+
+> Equation 6 missing the optimization goals and constraints, which come later in lengthy discussion ...
+
+> typo ...
+
+We have addressed them, and the corrections have been made. 
+
+>  “fewer engineering hurdles” can you clarify what you mean by this?
+
+We highlight ViTs are the foundation versions of the much complex architectures developed later on and in the corresponding paragraph, we attempt to justify our reasoning for only working with ViTs. The complexities introdcued by later models are usually in form of hybridisation with CNNs or alterations to the multi-head attention blocks. Given the immediate accessibility of the source codes, pre-trained weights and the wealth of available resources, there exists a compelling inclination to employ the Vision Transformer (ViT) models as opposed to any other much recent transformer based architecture.  
+
+> Can you clarify what the statement of Proposition 1 Condition 2? Are you stating the column space of V is contained in the row space of QK^T for each attention head? And can you justify why this assumption holds?
+
+> What’s the justification for Proposition 1. Condition 3?
+
+> Does the optimization in equation 6 only search for a single element statisfying closeness under addition? If so how many vectors do you learn and what are their values?
+
+> Figure 2 references epsilon on the x-axis, but epsilon is not defined in the optimization in equation 6.
+
+> “as the epsilon criteria becomes smaller, the learnt noise becomes better and better” Is this conclusion based on the % of matching predictions? ...
+
+> Our preliminary experiments indicate that there may exist a non-isomorphic space in the input space ...
+
+> Equations 7 and 8 rehash the optimization you already present in Section 4.
+
+> I’m having a hard time following this logic. If the procedure you describe identifies vectors in the approximate null space, then by definition ...
+
+> I’m quite surprised ViT-S accuracy improves so dramatically for ImageNet A and Sketch ...
+
+> This paper shows training with https://arxiv.org/abs/1808.08750 augmenting salt-and-pepper ...
+
+> The application to model patenting is not clear to me at all ...
+
+> I’m not sure what insight this work sheds in terms of how transformer models are robust to input perturbations ...
+
+> In the proof of proposition 1, what what r_{m, k}?
+
+> For the ViT-L 16x16, the computed nullspace dimension is 0 ...
+
