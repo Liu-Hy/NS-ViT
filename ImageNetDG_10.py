@@ -361,34 +361,3 @@ corruptions = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 
                'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate',
                'jpeg_compression']
 
-
-def get_datasets(ori_data_dir):
-    """
-    Get dataset and name tuple list of COCO
-
-    Args:
-        ori_data_dir (Path): directory for original dataset
-
-    Returns:
-        dataset_pairs (list): dataset and split tuple list
-
-    """
-    data = dict()
-    data["train"] = ImageFolder(os.path.join(ori_data_dir, "imagenet/train"), info_path)
-    data["val"] = ImageFolder(os.path.join(ori_data_dir, "imagenet/val"), info_path)
-    for c in corruptions:
-        c_path = os.path.join(ori_data_dir, "corruption", c)
-        assert os.path.isdir(c_path)
-        for i in range(1, 6):
-            s_path = os.path.join(c_path, str(i), "val")
-            assert os.path.isdir(s_path)
-            split = f"c-{c}-{i}"
-            data[split] = ImageFolder(s_path, info_path)
-    for typ in ["adversarial", "damagenet", "rendition", "sketch", "v2"]:
-        typ_path = os.path.join(ori_data_dir, typ)
-        assert os.path.isdir(typ_path)
-        if len(os.listdir(typ_path)) < 4 and "val" in os.listdir(typ_path):
-            typ_path = os.path.join(typ_path, "val")
-        data[typ] = ImageFolder(typ_path, info_path)
-
-    return [(v, k) for k, v in data.items()]

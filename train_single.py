@@ -10,8 +10,9 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 import torchattacks
+from torchattacks import AutoAttack
 #from torchvision import transforms
-from ImageNetDG_10 import ImageNetDG_10
+from ImageNetDG_local import ImageNetDG_local
 from utils import *
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -44,24 +45,41 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         iterator.set_postfix({"loss": round((epoch_loss / (step + 1)), 3)})
 
 
-def validate(dataloader, model, criterion, val_ratio, adv=False):
+def validate(dataloader, model, criterion, val_ratio, mask=None, adv='none', eps=8/225):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
-    if adv:
+    assert adv in ['none', 'FGSM', 'Linf', 'L2'], '{} is not supported!'.format(adv)
+    if adv == "FGSM":
         attack = torchattacks.FGSM(model, eps=8 / 225)
+    elif adv != "none":
+        print("aaaaaaaaaa")
+        attack = AutoAttack(model, norm=adv, eps=eps, version='standard', n_classes=1000)
+        print("bbbbbbbbbb")
     for step, batch in enumerate(dataloader):
         if step > int(val_ratio * len(dataloader)):
             break
         samples, labels = [x.cuda(non_blocking=True) for x in batch]
-        if adv:
+        if samples.shape[0] < 50:
+            continue
+        if adv != "none":
+            if adv != "FGSM":
+                print("cccccccc")
             samples = attack(samples, labels)
+            if adv != "FGSM":
+                print("dddddddd")
         with torch.no_grad():
+            if adv not in ["FGSM", "none"]:
+                print("eeeeeeeeee")
             outputs = model(samples)
+            if mask is not None:
+                outputs[:, mask] = -float('inf')
             loss += criterion(outputs, labels)
             _, preds = outputs.topk(5, -1, True, True)
             correct1 += torch.eq(preds[:, :1], labels.unsqueeze(1)).sum()
             correct5 += torch.eq(preds, labels.unsqueeze(1)).sum()
             total += samples.size(0)
+            if adv not in ["FGSM", "none"]:
+                print("ffffffffff")
 
     loss_val = loss.item() / len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
@@ -97,7 +115,7 @@ def validate_corruption(data_path, info_path, model, transform, criterion, batch
 
 def prepare_loader(split_data, info_path, batch_size, transform=None):
     if isinstance(split_data, (str, Path)):
-        split_data = ImageNetDG_10(split_data, info_path, transform=transform)
+        split_data = ImageNetDG_local(split_data, info_path, transform=transform)
     data_loader = DataLoader(split_data, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
     return data_loader
 
@@ -148,7 +166,7 @@ def main():
     info_path = Path("info")
 
     held_out = 0.1
-    data_set = ImageNetDG_10(data_path.joinpath('imagenet/train'), info_path, train_transform)
+    data_set = ImageNetDG_local(data_path.joinpath('imagenet/train'), info_path, train_transform)
     len_dev = int(held_out * len(data_set))
     len_train = len(data_set) - len_dev
     train_set, dev_set = torch.utils.data.random_split(data_set, (len_train, len_dev))
@@ -162,7 +180,7 @@ def main():
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
-    val_dataset = ImageNetDG_10(data_path.joinpath('imagenet/val'), info_path, val_transform)
+    val_dataset = ImageNetDG_local(data_path.joinpath('imagenet/val'), info_path, val_transform)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size, shuffle=False, num_workers=16,
                                              pin_memory=True)
 

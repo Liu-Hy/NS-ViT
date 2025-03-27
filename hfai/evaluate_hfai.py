@@ -1,5 +1,5 @@
 """Evaluation script to run on single node of HFAI server
-Not compatible with AutoAttack"""
+Currently having some problem with AutoAttack"""
 import haienv
 haienv.set_env('ns')
 

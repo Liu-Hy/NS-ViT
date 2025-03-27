@@ -35,7 +35,7 @@ def main(args):
     info_path = Path("info")
 
     if args.debug:
-        val_batch_size = 2
+        val_batch_size = 50
         val_ratio = 0.01
 
     model_name = 'vit_base_patch16_224'
@@ -56,7 +56,10 @@ def main(args):
             result[split] = acc
             print(result)
             if split == "val":
-                result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
+                result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv="FGSM")[0]
+                result["linf"] = validate(val_loader, model, criterion, val_ratio, adv="Linf")[0]
+                result["l2"] = validate(val_loader, model, criterion, val_ratio, adv="L2")[0]
+                print(result)
     # Evaluate on imagenet-c
     corruption_rs = validate_corruption(data_path.joinpath("corruption"), info_path, model, val_transform, criterion,
                                         val_batch_size, val_ratio)
