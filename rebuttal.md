@@ -22,5 +22,12 @@ discussion on the concept of invariance, and the motivation of our definition of
 our paper.
 
 
-**W2. Regarding comparison with previous work**
-We are sorry for the confusion. 
+**W2. Regarding comparison with previous work** \
+We are sorry for the confusion. In Table 1, we compared the performance of our method with ViT-B against
+several previous methods for robust training. However, this is not a fair comparison, because we fine-tuned the model with
+very few steps due to the limited computation budget, it is not fair to compare it with
+methods training ViT-B for hundreds of epochs. It still showed consistent improvement in different settings including
+the current SOTA on ViT-B, which showed the effectiveness of our methods. Comparing our method with adversarial training would be very interesting. 
+
+**Q1**
+
