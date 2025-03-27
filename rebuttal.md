@@ -51,11 +51,15 @@ the current SOTA on ViT-B, which showed the effectiveness of our methods. Compar
 
 >No ablation study over the choice of $\epsilon$
 
+Figure (2) highlights the training dynamics with change in the value of $\epsilon$. 
+
 >The accuracy differences seem more or less like random noises. Without a confidence bound ...
 
 >The whole story is not well organized - nobody cares about the existence of the null space unless it is shown ...
 
 >I find Figure 2 irrelevant: the training dynamics does not show much interesting.
+
+We have moved the figure to section 5 after we introduce the concept in equation 7.
 
 >I believe a much clearer intuition, a set of more robust results and a major rewriting of the paper is necessary
 ## Response to reviewer VJsT
