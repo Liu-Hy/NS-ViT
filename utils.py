@@ -6,6 +6,8 @@ import torch
 from torch import nn
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+
+from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel
 import torch.distributed as dist
 #import wandb
@@ -151,7 +153,7 @@ def get_model_and_config_offline(model_name):
 
 def validate_noise(data_path, model, transform, batch_size, delta_x, val_ratio, device):
     model.eval()
-    if isinstance(model, DistributedDataParallel):
+    if isinstance(model, (DataParallel, DistributedDataParallel)):
         mdl = model.module
     elif isinstance(model, torch.nn.Module):
         mdl = model
@@ -167,7 +169,7 @@ def validate_noise(data_path, model, transform, batch_size, delta_x, val_ratio, 
 def encoder_forward(model, x):
     # Concat CLS token to the patch embeddings,
     # Forward pass them through the model encoder to get the features of the CLS token.
-    if isinstance(model, DistributedDataParallel):
+    if isinstance(model, (DataParallel, DistributedDataParallel)):
         mdl = model.module
     elif isinstance(model, torch.nn.Module):
         mdl = model
@@ -188,7 +190,7 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     print(f"img size {img_size}")
     model.eval()
     model.zero_grad()
-    if isinstance(model, DistributedDataParallel):
+    if isinstance(model, (DataParallel, DistributedDataParallel)):
         mdl = model.module
     elif isinstance(model, torch.nn.Module):
         mdl = model

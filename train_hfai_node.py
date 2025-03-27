@@ -18,7 +18,6 @@ from tqdm import tqdm
 import hfai
 from ffrecord.torch import DataLoader
 from ffrecord.torch.dataset import Subset
-dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
 
 #hfai.nn.functional.set_replace_torch()
 
