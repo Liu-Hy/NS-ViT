@@ -159,7 +159,7 @@ def main():
     adv = True
     img_ratio = 0.1
     train_ratio = 1
-    val_ratio = 0.1
+    val_ratio = 1
     task = "imagenet"  # "imagenette"
     save_path = Path("./output").joinpath(task)
     data_path = Path("/var/lib/data")
