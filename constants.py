@@ -2,7 +2,7 @@ CORRUPTIONS = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 
                'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate',
                'jpeg_compression']
 
-SPLITS = ["train", "val", "adversarial", "damagenet", "rendition", "sketch", "v2"]
+SPLITS = ["val", "adversarial", "damagenet", "rendition", "sketch", "v2", "stylized"]
 for c in CORRUPTIONS:
     for s in range(1, 6):
         SPLITS.append("c-" + c + "-" + str(s))
