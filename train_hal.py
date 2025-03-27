@@ -16,7 +16,6 @@ import torch.distributed as dist
 from utils import *
 from tqdm import tqdm
 from torch.utils.data import DataLoader
-from torch.distributed.elastic.multiprocessing.errors import record
 import wandb
 
 
@@ -128,7 +127,6 @@ def prepare_loader(split_data, info_path, batch_size, transform=None):
     data_loader = DataLoader(split_data, batch_size=batch_size, sampler=data_sampler, num_workers=8, pin_memory=True)
     return data_loader
 
-@record
 def main(gpu, args):
     rank = args.nr * args.gpus + gpu
     dist.init_process_group(backend='nccl',
@@ -139,10 +137,10 @@ def main(gpu, args):
     torch.cuda.set_device(gpu)
     # 超参数设置
     epochs = 5
-    train_batch_size = 128  # 256 for base model
-    val_batch_size = 128
+    train_batch_size = 16  # 256 for base model
+    val_batch_size = 16
     rounds = 3
-    lr = 1e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
+    lr = 3e-5  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
     lim = 3
     nlr = 0.1
     eps = 0.01
@@ -156,8 +154,8 @@ def main(gpu, args):
     save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch32_224'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=True)
+    model_name = 'vit_base_patch16_224'
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat')
     model.cuda(gpu)
 
     m = model_name.split('_')[1]
@@ -187,7 +185,7 @@ def main(gpu, args):
     train_sampler = DistributedSampler(train_set)
     train_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4, pin_memory=True)
     img_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4,
-                              pin_memory=True)
+                            pin_memory=True)
     dev_loader = prepare_loader(dev_set, info_path, val_batch_size)
 
     val_transform = transforms.Compose([

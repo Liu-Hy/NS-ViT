@@ -121,9 +121,9 @@ def main():
     rounds, nlr, lim = 3, 0.02, 1  # lim=3, nlr=0.1 # round=3
     eps = 0.001  # 0.001
     adv = False
-    img_ratio = 0.02 # 0.02
-    train_ratio = 0.1
-    val_ratio = 0.05
+    img_ratio = 0.1 # 0.02
+    train_ratio = 1.
+    val_ratio = 1.
     task = "imagenet"  # "imagenette"
     save_path = Path("./output").joinpath(task)
     data_path = Path("/var/lib/data")
@@ -131,7 +131,7 @@ def main():
 
     # 模型、数据、优化器
     model_name = 'vit_base_patch16_224'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant="DAT")
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant="dat", offline=True)
     model.cuda()
 
     m = model_name.split('_')[1]
@@ -157,8 +157,8 @@ def main():
     len_dev = int(held_out * len(data_set))
     len_train = len(data_set) - len_dev
     train_set, dev_set = torch.utils.data.random_split(data_set, (len_train, len_dev))
-    train_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    img_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=4,
+    train_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    img_loader = DataLoader(train_set, batch_size=train_batch_size, shuffle=True, num_workers=8,
                               pin_memory=True)
     dev_loader = prepare_loader(dev_set, info_path, val_batch_size)
 

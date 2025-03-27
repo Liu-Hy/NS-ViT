@@ -1,6 +1,6 @@
 """Script to run on the HFAI server"""
-import hfai_env
-hfai_env.set_env('202111')
+import haienv
+haienv.set_env('ns')
 
 import os
 from pathlib import Path
@@ -12,7 +12,6 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 # from torchvision import transforms
-from ImageNetDG import ImageNetDG
 
 from utils import *
 from tqdm import tqdm
@@ -20,8 +19,10 @@ from tqdm import tqdm
 import hfai
 import hfai.distributed as dist
 from ffrecord.torch import DataLoader
+from ffrecord.torch.dataset import Subset
 dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
-hfai.nn.functional.set_replace_torch()
+
+#hfai.nn.functional.set_replace_torch()
 
 def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc):
     model.train()
@@ -118,16 +119,16 @@ def prepare_loader(split_data, batch_size, transform=None):
 def main(local_rank):
     # 超参数设置
     epochs = 10
-    train_batch_size = 64  # 256 for base model
-    val_batch_size = 64
+    train_batch_size = 24  # 256 for base model
+    val_batch_size = 24
     lr = 1e-4  # When using SGD and StepLR, set to 0.001
     rounds, nlr, lim = 3, 0.1, 3  # lim=1.0, nlr=0.02
     eps = 0.01  # 0.001
     adv = True
     img_ratio = 0.1
     train_ratio = 1
-    val_ratio = 0.1
-    save_path = "output"
+    val_ratio = 1
+    save_path = Path("output/hfai")
     data_path = Path("/var/lib/data")
     #save_path.mkdir(exist_ok=True, parents=True)
 
@@ -146,11 +147,22 @@ def main(local_rank):
     torch.cuda.set_device(local_rank)
 
     # 模型、数据、优化器
-    model_name = 'vit_base_patch32_224'
-    model, patch_size, img_size, model_config = get_model_and_config_offline(model_name)
+    model_name = 'vit_base_patch16_224'
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat', offline=True)
     model.cuda()
-    model = hfai.nn.to_hfai(model)
+    #model = hfai.nn.to_hfai(model)
     model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
+
+    m = model_name.split('_')[1]
+    setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}' + \
+              f'_lim{lim}_eps{eps}_imgr{img_ratio}_trainr{train_ratio}_valr{val_ratio}'
+    setting_path = save_path.joinpath(setting)
+    noise_path = setting_path.joinpath("noise")
+    model_path = setting_path.joinpath("model")
+    if local_rank == 0:
+        setting_path.mkdir(exist_ok=True, parents=True)
+        noise_path.mkdir(exist_ok=True, parents=True)
+        model_path.mkdir(exist_ok=True, parents=True)
 
     train_transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -158,33 +170,43 @@ def main(local_rank):
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
 
-    held_out = 0.1
-    data_set = ImageNetDG('train', transform=train_transform)
-    len_dev = int(held_out * len(data_set))
-    len_train = len(data_set) - len_dev
-    train_set, dev_set = torch.utils.data.random_split(data_set, (len_train, len_dev))
+    dataset = hfai.datasets.ImageNet('train', transform=train_transform)
+    data_size = len(dataset)
+    print(f"data set size: {data_size}")
+    cutoff = int(0.9 * data_size)
+    rand_idx = torch.randperm(data_size)
+    train_indices, dev_indices = rand_idx[:cutoff], rand_idx[cutoff:]
+    train_set = Subset(dataset, train_indices)
+    dev_set = Subset(dataset, dev_indices)
+    train_sampler = DistributedSampler(train_set)
+    img_sampler = DistributedSampler(train_set)
+    dev_sampler = DistributedSampler(dev_set)
+
+    train_loader = DataLoader(train_set, train_batch_size, sampler=train_sampler, num_workers=4, pin_memory=True)
+    img_loader = DataLoader(train_set, train_batch_size, sampler=img_sampler, num_workers=4, pin_memory=True)
+    dev_loader = DataLoader(dev_set, val_batch_size, sampler=dev_sampler, num_workers=4, pin_memory=True)
 
     print(f"splitting length: train set: {len(train_set)}, dev set: {len(dev_set)}")
-    train_sampler = DistributedSampler(train_set)
-    train_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4, pin_memory=True)
-
-    dev_loader = prepare_loader(dev_set, val_batch_size)
-    #print(type(train_loader), type(dev_loader))
-    img_loader = DataLoader(train_set, batch_size=train_batch_size, sampler=train_sampler, num_workers=4,
-                              pin_memory=True)
 
     val_transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
+    val_set = hfai.datasets.ImageNet('val', transform=val_transform)
+    val_sampler = DistributedSampler(val_set)
+    val_loader = DataLoader(val_set, val_batch_size, sampler=val_sampler, num_workers=4, pin_memory=True)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs)
 
-    ckpt_path = os.path.join(save_path, 'latest.pt')
-    start_epoch, start_step, others = hfai.checkpoint.init(model, optimizer, scheduler=scheduler, ckpt_path=ckpt_path)
+    ckpt_path = save_path.joinpath('latest.pt')
+    try:
+        start_epoch, start_step, others = hfai.checkpoint.init(model, optimizer, scheduler=scheduler, ckpt_path=ckpt_path)
+    except RuntimeError:
+        start_epoch, start_step, others = 0, 0, None
+        print("Failed to load checkpoint, start from scratch instead.")
     best_acc, delta_x = 0., None
     if others is not None:
         best_acc, delta_x = others
@@ -196,7 +218,7 @@ def main(local_rank):
         if adv:
             if delta_x is None:
                 print("---- Learning noise")
-                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps)
+                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio)
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
         print("---- Training model")
@@ -206,28 +228,31 @@ def main(local_rank):
         print("---- Validating model")
         result = dict()
         # Evaluate on held-out set
-        dev_acc, _ = validate(dev_loader, model, criterion, 1)
-        # Evaluate on val and OOD datasets except imagenet-c
-        for split in SPLITS:
-            if split != "train" and not split.startswith("c-"):
-                val_loader = prepare_loader(split, val_batch_size, val_transform)
-                acc, _ = validate(val_loader, model, criterion, 1)
-                result[split] = acc
-        # Evaluate on imagenet-c
-        corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, val_ratio)
-        result["corruption"] = corruption_rs["mce"]
-        # 保存
-        if rank == 0 and local_rank == 0:
-            print(f"Dev acc: {dev_acc}")
-            total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
-            print(f"Avg performance: {total}\n", result)
-            if dev_acc > best_acc: #dev_acc > best_acc
-                best_acc = dev_acc
-                print(f'New Best Acc: {best_acc:.2f}%')
-                torch.save(model.module.state_dict(),
-                           os.path.join(save_path, 'best.pt'))
+        dev_acc, _ = validate(dev_loader, model, criterion, val_ratio)
+        # Evaluate on val set
+        val_acc, _ = validate(val_loader, model, criterion, val_ratio)
+        result["val"] = val_acc
+        if local_rank == 0:
+            torch.save({"model_name": model_name, "epoch": epoch,
+                        "model_state_dict": model.module.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "scheduler_state_dict": scheduler.state_dict(),
+                        "result": result}, model_path.joinpath(str(epoch)))
+            # 保存
+            if rank == 0:
+                print(f"Dev acc: {dev_acc}")
+                total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
+                print(f"Avg performance: {total}\n", result)
+                if dev_acc > best_acc:
+                    best_acc = dev_acc
+                    print(f'New Best Acc: {best_acc:.2f}%')
+                    torch.save(model.module.state_dict(),
+                               os.path.join(save_path, 'best.pt'))
 
 
 if __name__ == '__main__':
     ngpus = torch.cuda.device_count()
+    os.environ[
+        "TORCH_DISTRIBUTED_DEBUG"
+    ] = "DETAIL"
     hfai.multiprocessing.spawn(main, args=(), nprocs=ngpus)

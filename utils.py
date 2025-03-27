@@ -93,13 +93,20 @@ def init_dataset(args, model_config):
 def get_mean(l):
     return sum(l) / len(l)
 
-def get_model_and_config(model_name, variant=None):
-    pretrained = (variant is None)
+def get_model_and_config(model_name, variant=None, offline=False):
     print(f'{model_name}')
-    model = timm.create_model(model_name, pretrained=pretrained)
-    if variant is not None:
-        if variant == "DAT":
-            ckpt = model_zoo.load_url("http://alisec-competition.oss-cn-shanghai.aliyuncs.com/xiaofeng/easy_robust/benchmark_models/ours/examples/dat/model_best.pth.tar")
+    if variant is None:
+        if offline:
+            model = timm.create_model(model_name, checkpoint_path=os.path.join("pretrained", model_name + ".npz"))
+        else:
+            model = timm.create_model(model_name, pretrained=True)
+    else:
+        model = timm.create_model(model_name, pretrained=False)
+        if variant == "dat":
+            if offline:
+                ckpt = torch.load(os.path.join("pretrained", model_name + "_" + variant + ".pth.tar"))
+            else:
+                ckpt = model_zoo.load_url("http://alisec-competition.oss-cn-shanghai.aliyuncs.com/xiaofeng/easy_robust/benchmark_models/ours/examples/dat/model_best.pth.tar")
             if 'state_dict' in ckpt.keys():
                 state_dict = ckpt['state_dict']
             else:
@@ -197,6 +204,8 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).cuda(non_blocking=True)
     if isinstance(model, DistributedDataParallel):
         dist.broadcast(delta_x, 0)
+        #print(f"Delta_x after broadcast: {delta_x}")
+        #dist.barrier()
     # TODO: when called by hfai script, should it use hfai.distributed.broadcast instead?
     delta_x.requires_grad = True
     print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}", flush=True)
@@ -236,7 +245,15 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
             if isinstance(model, DistributedDataParallel):
                 dist.all_reduce(delta_x.grad)
                 delta_x.grad /= dist.get_world_size()
+                #print(f"Delta_x.grad after reduction: {delta_x.grad}")
+                #dist.barrier()
             optimizer.step()
+            """if isinstance(model, DistributedDataParallel):
+                dist.all_reduce(delta_x)
+                with torch.no_grad():
+                    delta_x /= dist.get_world_size()
+                print(f"Delta_x after reduction: {delta_x}")
+                dist.barrier()"""
             scheduler.step()
             iterator.set_postfix({"error": round(error_mult.item(), 4)})
         if not (i + 1) % 1:
