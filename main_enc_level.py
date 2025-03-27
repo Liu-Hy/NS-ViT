@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import SubsetRandomSampler
 
 from methods import encoder_level_noise
-from utils import get_model_and_config, validate_by_parts
+from utils import get_model_and_config, validate_encoder_noise
 import time
 
 def main(model_name='vit_base_patch32_224', data_dir='data/', output_dir='./outputs/'):
@@ -46,10 +46,10 @@ def main(model_name='vit_base_patch32_224', data_dir='data/', output_dir='./outp
             transforms.ToTensor(), transforms.Normalize(model_config['mean'], model_config['std'])]))
         val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=128, shuffle=True, num_workers=16,
                                                  pin_memory=True)
-        corr_res = validate_by_parts(model, val_loader, delta_y, device)
+        corr_res = validate_encoder_noise(model, val_loader, delta_y, device)
         idx = torch.randperm(delta_y.nelement())
         t = delta_y.reshape(-1)[idx].reshape(delta_y.size())
-        incorr_res = validate_by_parts(model, val_loader, t, device)
+        incorr_res = validate_encoder_noise(model, val_loader, t, device)
         results[del_name] = {'corr': corr_res, 'shuffle': incorr_res}
     torch.save(results, os.path.join(output_dir, model_name + '.ns'))
 

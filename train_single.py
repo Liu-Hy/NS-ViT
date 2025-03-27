@@ -8,12 +8,16 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.optim import SGD, AdamW
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 from torchvision import transforms, models, datasets
-from utils import get_model_and_config, validate_by_parts, encoder_forward, empty_gpu
+from utils import get_model_and_config, validate_encoder_noise, encoder_forward, empty_gpu
 from methods import encoder_level_noise, encoder_level_epsilon_noise
+from tqdm import tqdm
 
 corruptions = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur',
                'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate',
                'jpeg_compression']
+
+alex = [88.6, 89.4, 92.3, 82.0, 82.6, 78.6, 79.8, 86.7, 82.7, 81.9, 56.5, 85.3, 64.6, 71.8, 60.7]
+
 
 def train(dataloader, model, criterion, optimizer, scheduler, epoch):
     model.train()
@@ -31,7 +35,8 @@ def train(dataloader, model, criterion, optimizer, scheduler, epoch):
 
 def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
     model.train()
-    for step, batch in enumerate(dataloader):
+    iterator = tqdm(dataloader)
+    for step, batch in enumerate(iterator):
         imgs, labels = [x.cuda(non_blocking=True) for x in batch]
         optimizer.zero_grad()
         outputs = model(imgs)
@@ -44,7 +49,7 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
             adv_loss = criterion(adv_outputs, labels)
             # adv_loss.backward()
             consistency = ((adv_outputs - outputs) ** 2).sum(dim=-1).mean()
-            tot_loss = loss + adv_loss #+ consistency
+            tot_loss = loss + adv_loss  # + consistency
             tot_loss.backward()
         else:
             loss.backward()
@@ -60,9 +65,17 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x):
                     f'Step {step}, Loss: {round(loss.item(), 4)}', flush=True)
 
 
-def validate(dataloader, model, criterion, epoch):
+def validate(data_path, model, criterion, transform, batch_size, val_ratio, is_clean=False):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
+    val_dataset = datasets.ImageFolder(data_path, transform)
+
+    val_size = len(val_dataset)
+    indices = torch.randperm(val_size)[:int(val_ratio * val_size)]
+    val_sampler = SubsetRandomSampler(indices)
+
+    dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, sampler=val_sampler, num_workers=16,
+                                             pin_memory=True)
     with torch.no_grad():
         for step, batch in enumerate(dataloader):
             samples, labels = [x.cuda(non_blocking=True) for x in batch]
@@ -78,63 +91,51 @@ def validate(dataloader, model, criterion, epoch):
     loss_val = loss.item() / len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
     acc5 = 100 * correct5.item() / total.item()
-    print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
+    if is_clean:
+        print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
 
-    return correct1.item() / total.item()
+    return 100 - acc1, loss_val
 
-def validate_all(data_path, model, criterion, transform, batch_size, delta_x, device):
+
+def mean(l):
+    return sum(l) / len(l)
+
+
+def validate_all(data_path, model, criterion, transform, batch_size, delta_x, val_ratio, device):
     model.eval()
-    cor_acc1s = []
-    cor_acc5s = []
-    result = dict()
-    #for type_path in sorted(data_path.iterdir()):
-    for typ in corruptions:
-        type_path = data_path.joinpath(typ)
-        assert type_path in list(data_path.iterdir())
-        if typ == "clean":
-            val_dataset = datasets.ImageFolder(type_path, transform)
-        else:
-            val_dataset = datasets.ImageFolder(type_path.joinpath("4"), transform)
-
-            val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=16,
-            pin_memory=True)
-
-            loss, correct1, correct5, total = torch.zeros(4).cuda()
-            with torch.no_grad():
-                for step, batch in enumerate(val_loader):
-                    samples, labels = [x.cuda(non_blocking=True) for x in batch]
-                    # print(labels.shape, labels.max(), labels.min())
-                    outputs = model(samples)
-                    # print(f'output shape: {outputs.shape}')
-                    loss += criterion(outputs, labels)
-                    _, preds = outputs.topk(5, -1, True, True)
-                    correct1 += torch.eq(preds[:, :1], labels.unsqueeze(1)).sum()
-                    correct5 += torch.eq(preds, labels.unsqueeze(1)).sum()
-                    total += samples.size(0)
-            loss_val = loss.item() / len(val_loader)
-            acc1 = round(100 * correct1.item() / total.item(), 2)
-            acc5 = round(100 * correct5.item() / total.item(), 2)
-        if typ == "clean":
-            if delta_x is not None:
-                print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
-                corr_res = validate_by_parts(model, val_loader, delta_x, device)
-                idx = torch.randperm(delta_x.nelement())
-                t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
-                incorr_res = validate_by_parts(model, val_loader, t, device)
-
-            result["pure"] = {"acc1": acc1, "acc5": acc5}
-            print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)
-        else:
-            cor_acc1s.append(acc1)
-            cor_acc5s.append(acc5)
-    result["cor_acc1s"] = cor_acc1s
-    result["cor_acc5s"] = cor_acc5s
-    avg_acc1 = sum(cor_acc1s)/len(cor_acc1s)
-    avg_acc5 = sum(cor_acc5s)/len(cor_acc5s)
-    result["avg"] = {"acc1": avg_acc1, "acc5": avg_acc5}
-    print(f"Corrupted Acc1: {cor_acc1s}, Avg: {avg_acc1:.4f}")
-    print(f"Corrupted Acc5: {cor_acc5s}, Avg: {avg_acc5:.4f}")
+    es = []
+    # result = dict()
+    result = {"mce": 1.}
+    # for type_path in sorted(data_path.iterdir()):
+    clean_path = data_path.joinpath("imagenet/val")
+    if delta_x is not None:
+        print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
+        corr_res = validate_encoder_noise(model, clean_path, transform, batch_size, delta_x, val_ratio, device)
+        idx = torch.randperm(delta_x.nelement())
+        t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
+        incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)
+    clean_e, _ = validate(clean_path, model, criterion, transform, batch_size, val_ratio, is_clean=True)
+    for typ in tqdm(corruptions):
+        type_path = data_path.joinpath(f"imagenet-c/{typ}")
+        assert type_path in list(data_path.joinpath("imagenet-c").iterdir())
+        type_e = []
+        for s in range(1, 6):
+            s_path = type_path.joinpath(str(s))
+            assert s_path in list(type_path.iterdir())
+            s_e, _ = validate(s_path, model, criterion, transform, batch_size, val_ratio)
+            type_e.append(s_e)
+        es.append(mean(type_e))
+    me = mean(es)
+    relative_es = [(e / al) for (e, al) in zip(es, alex)]
+    mce = 100 * mean(relative_es)
+    result["clean_e"] = clean_e
+    result["es"] = es
+    result["ces"] = relative_es
+    result["me"] = me
+    result["mce"] = mce
+    print(f"mCE: {mce:.2f}%, mean_err: {me}%", flush=True)
     return result
+
 
 def main():
     empty_gpu()
@@ -145,12 +146,15 @@ def main():
     train_batch_size = 128  # 256 for base model
     val_batch_size = 128
     lr = 3e-4  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
-    rounds, nlr, lim = 30, 0.1, 5  # lim=1.0, nlr=0.02
+    rounds, nlr, lim = 30, 0.01, 4  # lim=1.0, nlr=0.02
     eps = 0.01  # 0.001
     adv = False
-    task = "tiny-imagenet" #"imagenette"
+    img_ratio = 0.05
+    train_ratio = 0.1
+    val_ratio = 0.01
+    task = "imagenet"  # "imagenette"
     save_path = Path("./output").joinpath(task)
-    data_path = Path("./data").joinpath(task)
+    data_path = Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
 
     # 模型、数据、优化器
@@ -160,7 +164,8 @@ def main():
     model.cuda()
 
     m = model_name.split('_')[1]
-    setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}_lim{lim}_eps{eps}'
+    setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}' + \
+              f'_lim{lim}_eps{eps}_imgr{img_ratio}_trainr{train_ratio}_valr{val_ratio}'
     setting_path = save_path.joinpath(setting)
     setting_path.mkdir(exist_ok=True, parents=True)
     noise_path = setting_path.joinpath("noise")
@@ -179,17 +184,21 @@ def main():
     train_dataloader = train_dataset.loader(batch_size, sampler=train_datasampler, num_workers=4, pin_memory=True)"""
 
     train_transform = transforms.Compose([
-        transforms.Resize((img_size, img_size)),
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
         transforms.ToTensor(), transforms.Normalize(model_config['mean'], model_config['std'])])
 
-    base_dataset = datasets.ImageFolder(data_path.joinpath('train'), train_transform)
+    base_dataset = datasets.ImageFolder(data_path.joinpath('imagenet/train'), train_transform)
+    print(data_path.joinpath('imagenet/train'))
     train_size = len(base_dataset)
-    indices = torch.randperm(train_size)[:int(0.1 * train_size)]
-    img_sampler = SubsetRandomSampler(indices)
+    img_indices = torch.randperm(train_size)[:int(img_ratio * train_size)]
+    img_sampler = SubsetRandomSampler(img_indices)
+    train_indices = torch.randperm(train_size)[:int(train_ratio * train_size)]
+    train_sampler = SubsetRandomSampler(train_indices)
     img_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=img_sampler,
-                                               num_workers=16, pin_memory=True)
-    train_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=img_sampler,
                                              num_workers=16, pin_memory=True)
+    train_loader = torch.utils.data.DataLoader(base_dataset, batch_size=train_batch_size, sampler=train_sampler,
+                                               num_workers=16, pin_memory=True)
 
     """val_transform = transforms.Compose([
         transforms.Resize(256),
@@ -201,10 +210,14 @@ def main():
     val_dataset = hfai.datasets.ImageNet('val', transform=val_transform)
     val_datasampler = DistributedSampler(val_dataset)
     val_dataloader = val_dataset.loader(batch_size, sampler=val_datasampler, num_workers=4, pin_memory=True)"""
-    val_transform = train_transform
-    #val_dataset = datasets.ImageFolder(data_path.joinpath('val'), val_transform)
-    #val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size, shuffle=True, num_workers=16,
-                                             #pin_memory=True)
+    val_transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(model_config['mean'], model_config['std'])])
+    # val_dataset = datasets.ImageFolder(data_path.joinpath('val'), val_transform)
+    # val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size, shuffle=True, num_workers=16,
+    # pin_memory=True)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
@@ -218,7 +231,7 @@ def main():
     start_epoch = len(list(model_path.iterdir()))
     if start_epoch > 0:
         print(f"Restore training from epoch {start_epoch}")
-        checkpoint = torch.load(model_path.joinpath(str(start_epoch-1)))
+        checkpoint = torch.load(model_path.joinpath(str(start_epoch - 1)))
         model.load_state_dict(checkpoint["model_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
@@ -245,15 +258,16 @@ def main():
         incorr_res = validate_by_parts(model, val_loader, t, device)"""
 
         print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x)
-        #acc = validate(val_loader, model, criterion, epoch)
-        rs = validate_all(data_path.joinpath('val'), model, criterion, val_transform, val_batch_size, delta_x, device)
+        # adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x)
+        # acc = validate(val_loader, model, criterion, epoch)
+        print("---- Validating model")
+        rs = validate_all(data_path, model, criterion, val_transform, val_batch_size, delta_x, val_ratio, device)
         torch.save({"model_name": model_name, "epoch": epoch,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
                     "scheduler_state_dict": scheduler.state_dict(),
                     "result": rs}, model_path.joinpath(str(epoch)))
-        rbn = rs["avg"]["acc1"]
+        rbn = rs["mce"]
         # 保存
         if rbn > best_rbn:
             best_rbn = rbn

@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 import wandb
 from dotenv import load_dotenv
 from timm.data import resolve_data_config
+from torch.utils.data import SubsetRandomSampler
 
 load_dotenv()
 
@@ -105,11 +106,18 @@ def encoder_forward(model, x):
     return model.pre_logits(x[:, 0])  # What is pre_logits?
 
 
-def validate_by_parts(model, loader, delta_x, device):
+def validate_encoder_noise(model, data_path, transform, batch_size, delta_x, val_ratio, device):
     """Evaluate the influence of the encoder noise "delta+x" to the model's prediction on a dataset"""
     og_preds = {'feats': [], 'outs': []}
     alt_preds = {'feats': [], 'outs': []}
+    val_dataset = datasets.ImageFolder(data_path, transform)
 
+    val_size = len(val_dataset)
+    indices = torch.randperm(val_size)[:int(val_ratio * val_size)]
+    val_sampler = SubsetRandomSampler(indices)
+
+    loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, sampler=val_sampler, num_workers=16,
+                                             pin_memory=True)
     model.eval()
     with torch.no_grad():
         for _, (imgs, _) in enumerate(loader):
