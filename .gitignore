@@ -1,0 +1,9 @@
+wandb/
+outputs/
+.git
+.idea
+.idea/
+.idea/*
+data/
+artifacts/
+.env
