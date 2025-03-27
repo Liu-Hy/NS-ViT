@@ -25,6 +25,7 @@ import hfai
 import hfai.distributed as dist
 from ffrecord.torch import DataLoader
 from ffrecord.torch.dataset import Subset
+from easyrobust.attacks import AutoAttack
 
 dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
 
@@ -62,17 +63,22 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
             model.try_save(epoch, step + 1, others=(best_acc, delta_x), force=True)
 
 
-def validate(dataloader, model, criterion, val_ratio, adv=False, mask=None):
+def validate(dataloader, model, criterion, val_ratio, mask=None, adv='none', eps=8/225):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
-    if adv:
+    assert adv in ['none', 'FGSM', 'Linf', 'L2'], '{} is not supported!'.format(adv)
+    if adv == "FGSM":
         attack = torchattacks.FGSM(model, eps=8 / 225)
+    elif adv != "none":
+        attack = AutoAttack(model, norm=adv, eps=eps, version='standard')
     for step, batch in enumerate(dataloader):
         if step > int(val_ratio * len(dataloader)):
             break
         samples, labels = [x.cuda(non_blocking=True) for x in batch]
-        if adv:
+        if adv == "FGSM":
             samples = attack(samples, labels)
+        elif adv != "none":
+            samples = attack.run_standard_evaluation(samples, labels, bs=samples.shape[0])
         with torch.no_grad():
             outputs = model(samples)
             if mask is not None:
@@ -89,9 +95,6 @@ def validate(dataloader, model, criterion, val_ratio, adv=False, mask=None):
     loss_val = loss.item() / dist.get_world_size() / len(dataloader)
     acc1 = 100 * correct1.item() / total.item()
     acc5 = 100 * correct5.item() / total.item()
-    """if local_rank == 0:
-        if is_clean:
-            print(f'Validation loss: {loss_val:.4f}, Acc1: {acc1:.2f}%, Acc5: {acc5:.2f}%', flush=True)"""
 
     return acc1, loss_val
 

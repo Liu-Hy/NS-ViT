@@ -82,6 +82,7 @@ def main(local_rank, args):
     # Evaluate on val and OOD datasets except imagenet-c
     for split in SPLITS:
         if split != "train" and not split.startswith("c-"):
+            # Use a logits mask to evaluate on 200-class validation sets
             if split == "adversarial":
                 mask = imagenet_a_mask
             elif split == "rendition":
@@ -96,8 +97,10 @@ def main(local_rank, args):
                 val_loader = prepare_loader(split, val_batch_size, val_transform)
             acc, _ = validate(val_loader, model, criterion, val_ratio, mask=mask)
             result[split] = acc
+            # Evaluate adversarial robustness on the validation set. Feel free to add more.
             if split == "val":
-                result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
+                result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv="FGSM")[0]
+                result["linf"] = validate(val_loader, model, criterion, val_ratio, adv="Linf")[0]
     # Evaluate on imagenet-c
     c_transform = get_val_transform(model_config, "corruption")
     corruption_rs = validate_corruption(model, c_transform, criterion, val_batch_size, 1.)
