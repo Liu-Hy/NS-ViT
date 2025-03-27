@@ -7,7 +7,7 @@ from utils import encoder_forward
 import time
 
 
-def encoder_level_noise(model, loader, rounds, nlr, lim, device):
+def encoder_level_noise(model, loader, img_size, rounds, nlr, lim, device):
     # Todo: Some issue with making it work on a GPU
     model = model.to(device)
     model.eval()
@@ -20,7 +20,7 @@ def encoder_level_noise(model, loader, rounds, nlr, lim, device):
     patch_embed = model.patch_embed
 
     with torch.no_grad():
-        _ = patch_embed(torch.rand(1, 3, 224, 224).to(device))
+        _ = patch_embed(torch.rand(1, 3, img_size, img_size).to(device))
         del_x_shape = _.shape
         #print(del_x_shape)
 
@@ -70,8 +70,9 @@ def encoder_level_noise(model, loader, rounds, nlr, lim, device):
 
     return delta_x
 
-def encoder_level_epsilon_noise(model, loader, rounds, nlr, lim, eps, device):
+def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, device):
     # Todo: Some issue with making it work on a GPU
+    print(f"img size {img_size}")
     model = model.to(device)
     model.eval()
     model.zero_grad()
@@ -83,7 +84,7 @@ def encoder_level_epsilon_noise(model, loader, rounds, nlr, lim, eps, device):
     patch_embed = model.patch_embed
 
     with torch.no_grad():
-        _ = patch_embed(torch.rand(1, 3, 224, 224).to(device))
+        _ = patch_embed(torch.rand(1, 3, img_size, img_size).to(device))
         del_x_shape = _.shape
         #print(del_x_shape)
 
