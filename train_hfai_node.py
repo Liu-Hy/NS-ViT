@@ -21,10 +21,9 @@ from ffrecord.torch.dataset import Subset
 
 #hfai.nn.functional.set_replace_torch()
 
-def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, start_step, best_acc):
+def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch):
     model.train()
     for step, batch in enumerate(dataloader):
-        step += start_step
         if step > int(train_ratio * len(dataloader)):
             break
         imgs, labels = [x.cuda(non_blocking=True) for x in batch]
@@ -33,9 +32,9 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
         # optimizer.zero_grad()
         loss = criterion(outputs, labels)
         if adv:
-            x = model.patch_embed(imgs)
-            x = x + delta_x
-            adv_outputs = model.head(encoder_forward(model, x))
+            x = model.module.patch_embed(imgs)
+            x = x + delta_x.cuda(non_blocking=True)
+            adv_outputs = model.module.head(encoder_forward(model, x))
             adv_loss = criterion(adv_outputs, labels)
             # adv_loss.backward()
             consistency = ((adv_outputs - outputs) ** 2).sum(dim=-1).mean()
@@ -51,8 +50,6 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
             else:
                 print(
                     f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}', flush=True)
-        if step % 100 == 0:
-            model.try_save(epoch, step + 1, others=(best_acc, delta_x), force=True)
 
 
 def validate(dataloader, model, criterion, val_ratio):
@@ -111,15 +108,15 @@ def main():
     print(device)
     # 超参数设置
     epochs = 10
-    train_batch_size = 24  # 256 for base model
-    val_batch_size = 24
-    lr = 1e-4  # When using SGD and StepLR, set to 0.001
+    train_batch_size = 128  # 256 for base model
+    val_batch_size = 128
     rounds, nlr, lim = 3, 0.1, 3  # lim=1.0, nlr=0.02
+    lr = 1e-4  # When using SGD and StepLR, set to 0.001
     eps = 0.01  # 0.001
     adv = True
     img_ratio = 0.1
-    train_ratio = 1
-    val_ratio = 1
+    train_ratio = 1.
+    val_ratio = 1.
     save_path = Path("output/hfai")
     data_path = Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
@@ -168,36 +165,39 @@ def main():
         transforms.ToTensor(),
         transforms.Normalize(model_config['mean'], model_config['std'])])
     val_set = hfai.datasets.ImageNet('val', transform=val_transform)
-    val_loader = DataLoader(val_set, val_batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    val_loader = DataLoader(val_set, batch_size=val_batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs)
 
-    ckpt_path = save_path.joinpath('latest.pt')
-    try:
-        start_epoch, start_step, others = hfai.checkpoint.init(model, optimizer, scheduler=scheduler, ckpt_path=ckpt_path)
-    except RuntimeError:
-        start_epoch, start_step, others = 0, 0, None
-        print("Failed to load checkpoint, start from scratch instead.")
-    best_acc, delta_x = 0., None
-    if others is not None:
-        best_acc, delta_x = others
-        delta_x = delta_x.to(device)
+    best_acc = 0.
 
     # 训练、验证
+    start_epoch = len(list(model_path.iterdir()))
+    if start_epoch > 0:
+        print(f"Restore training from epoch {start_epoch}")
+        checkpoint = torch.load(model_path.joinpath(str(start_epoch - 1)))
+        model.module.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+        best_acc = torch.load(setting_path.joinpath("best_epoch"))["best_acc"]
+        print(f"Previous best acc: {best_acc}")
+
+    delta_x = None
     for epoch in range(start_epoch, epochs):
-        train_loader.set_step(start_step)
         if adv:
-            if delta_x is None:
+            if Path.exists(noise_path.joinpath(str(epoch))):
+                print(f"Loading learned noise at epoch {epoch}")
+                delta_x = torch.load(noise_path.joinpath(str(epoch)))['delta_x']
+            else:
                 print("---- Learning noise")
                 delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio)
+                torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
         print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, start_step, best_acc)
-        start_step = 0
-        delta_x = None
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch)
         print("---- Validating model")
         result = dict()
         # Evaluate on held-out set
@@ -205,12 +205,14 @@ def main():
         # Evaluate on val set
         val_acc, _ = validate(val_loader, model, criterion, val_ratio)
         result["val"] = val_acc
-
-        torch.save({"model_name": model_name, "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "scheduler_state_dict": scheduler.state_dict(),
-                    "result": result}, model_path.joinpath(str(epoch)))
+        try:
+            torch.save({"model_name": model_name, "epoch": epoch,
+                        "model_state_dict": model.module.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "scheduler_state_dict": scheduler.state_dict(),
+                        "result": result}, model_path.joinpath(str(epoch)))
+        except FileExistsError:
+            print("File exists")
         # 保存
         print(f"Dev acc: {dev_acc}")
         total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
@@ -218,8 +220,10 @@ def main():
         if dev_acc > best_acc:
             best_acc = dev_acc
             print(f'New Best Acc: {best_acc:.2f}%')
-            torch.save(model.state_dict(),
-                       os.path.join(save_path, 'best.pt'))
+            try:
+                torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
+            except FileExistsError:
+                print("File exists")
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 # from torchvision import transforms
 from ImageNetDG import ImageNetDG
-
+import argparse
 from utils import *
 from tqdm import tqdm
 
@@ -117,21 +117,25 @@ def prepare_loader(split_data, batch_size, transform=None):
     data_loader = DataLoader(split_data, batch_size=batch_size, sampler=data_sampler, num_workers=4, pin_memory=True)
     return data_loader
 
-def main(local_rank):
+def main(local_rank, args):
     # 超参数设置
     epochs = 10
-    train_batch_size = 24  # 256 for base model
-    val_batch_size = 24
+    train_batch_size = 16#16  # 256 for base model
+    val_batch_size = 16#16
     lr = 1e-4  # When using SGD and StepLR, set to 0.001
     rounds, nlr, lim = 3, 0.1, 3  # lim=1.0, nlr=0.02
     eps = 0.01  # 0.001
     adv = True
     img_ratio = 0.1
-    train_ratio = 1
-    val_ratio = 1
+    train_ratio = 1.
+    val_ratio = 1.
     save_path = Path("output/hfai")
     data_path = Path("/var/lib/data")
     #save_path.mkdir(exist_ok=True, parents=True)
+
+    if args.debug:
+        train_batch_size, val_batch_size = 2, 2
+        img_ratio, train_ratio, val_ratio = 0.001, 0.001, 0.1
 
     # 多机通信
     ip = os.environ['MASTER_ADDR']
@@ -152,7 +156,7 @@ def main(local_rank):
     model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat', offline=True)
     model.cuda()
     #model = hfai.nn.to_hfai(model)
-    model = DistributedDataParallel(model.cuda(), device_ids=[local_rank], find_unused_parameters=True)
+    model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
 
     m = model_name.split('_')[1]
     setting = f'{m}_ps{patch_size}_epochs{epochs}_lr{lr}_bs{train_batch_size}_adv_{adv}_nlr{nlr}_rounds{rounds}' + \
@@ -234,11 +238,14 @@ def main(local_rank):
         val_acc, _ = validate(val_loader, model, criterion, val_ratio)
         result["val"] = val_acc
         if local_rank == 0:
-            torch.save({"model_name": model_name, "epoch": epoch,
-                        "model_state_dict": model.module.state_dict(),
-                        "optimizer_state_dict": optimizer.state_dict(),
-                        "scheduler_state_dict": scheduler.state_dict(),
-                        "result": result}, model_path.joinpath(str(epoch)))
+            try:
+                torch.save({"model_name": model_name, "epoch": epoch,
+                            "model_state_dict": model.module.state_dict(),
+                            "optimizer_state_dict": optimizer.state_dict(),
+                            "scheduler_state_dict": scheduler.state_dict(),
+                            "result": result}, model_path.joinpath(str(epoch)))
+            except FileExistsError:
+                print("File exists")
             # 保存
             if rank == 0:
                 print(f"Dev acc: {dev_acc}")
@@ -247,12 +254,17 @@ def main(local_rank):
                 if dev_acc > best_acc:
                     best_acc = dev_acc
                     print(f'New Best Acc: {best_acc:.2f}%')
-                    torch.save(model.module.state_dict(),
-                               os.path.join(save_path, 'best.pt'))
+                    try:
+                        torch.save({"model_state_dict": model.module.state_dict(), "best_epoch": epoch, "best_acc": best_acc}, setting_path.joinpath("best_epoch"))
+                    except FileExistsError:
+                        print("File exists")
 
 
 if __name__ == '__main__':
     ngpus = torch.cuda.device_count()
     os.environ["TORCH_CPP_LOG_LEVEL"] = "INFO"
     os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
-    hfai.multiprocessing.spawn(main, args=(), nprocs=ngpus)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-db', '--debug', action='store_true')
+    args = parser.parse_args()
+    hfai.multiprocessing.spawn(main, args=(args,), nprocs=ngpus)

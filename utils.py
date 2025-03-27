@@ -132,8 +132,6 @@ def get_model_and_config(model_name, variant=None, offline=False):
         patch_size = 32
         img_size = 224
     print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
-    #config["mean"] = (0., 0., 0.)
-    #config["std"] = (1., 1., 1.)
 
     return model, patch_size, img_size, config
 
@@ -206,7 +204,7 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     delta_x = torch.empty(del_x_shape).uniform_(-lim, lim).type(torch.FloatTensor).cuda(non_blocking=True)
     if isinstance(model, DistributedDataParallel):
         dist.broadcast(delta_x, 0)
-        #print(f"Delta_x after broadcast: {delta_x}")
+        print(f"Delta_x after broadcast: {delta_x}")
         #dist.barrier()
     # TODO: when called by hfai script, should it use hfai.distributed.broadcast instead?
     delta_x.requires_grad = True
@@ -244,12 +242,8 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
                 return delta_x
 
             error_mult = (((preds - og_preds) ** 2).sum(dim=-1) ** 0.5).mean()
-            # error_mult = ((preds - og_preds) ** 2).sum(dim=-1).mean()
-            # hinge = torch.max(torch.stack([error_mult - eps, torch.tensor(0)]))
             error_mult.backward()
             if isinstance(model, DistributedDataParallel):
-                #dist.barrier()
-                print("Gradient shape: ", delta_x.grad.shape)
                 dist.barrier()
                 dist.all_reduce(delta_x.grad)
                 delta_x.grad /= dist.get_world_size()

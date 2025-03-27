@@ -13,6 +13,7 @@ from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 #from torchvision import transforms
 from custom_dataset import ImageFolder
 import torch.distributed as dist
+import argparse
 from utils import *
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -137,8 +138,8 @@ def main(gpu, args):
     torch.cuda.set_device(gpu)
     # 超参数设置
     epochs = 5
-    train_batch_size = 16  # 256 for base model
-    val_batch_size = 16
+    train_batch_size = 16#16  # 256 for base model
+    val_batch_size = 16#16
     rounds = 3
     lr = 3e-5  # When using SGD and StepLR, set to 0.001 # when AdamW and bachsize=256, 3e-4
     lim = 3
@@ -146,16 +147,19 @@ def main(gpu, args):
     eps = 0.01
     adv = True
     img_ratio = 0.1 #0.02
-    train_ratio = 0.1 #0.1
-    val_ratio = 0.1 #0.05
-    task = "imagenet"
-    save_path = Path("./output").joinpath(task)
+    train_ratio = 1. #0.1
+    val_ratio = 1. #0.05
+    save_path = Path("./output/hfai")
     data_path = Path("../data") #Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
 
+    if args.debug:
+        train_batch_size, val_batch_size = 2, 2
+        img_ratio, train_ratio, val_ratio = 0.001, 0.001, 0.1
+
     # 模型、数据、优化器
     model_name = 'vit_base_patch16_224'
-    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat')
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, variant='dat', offline=True)
     model.cuda(gpu)
 
     m = model_name.split('_')[1]
@@ -199,7 +203,7 @@ def main(gpu, args):
     scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs)
 
     # Wrap the model
-    model = nn.parallel.DistributedDataParallel(model, device_ids=[gpu], find_unused_parameters=True)
+    model = nn.parallel.DistributedDataParallel(model, device_ids=[gpu])
     best_acc = 0.
 
     # 训练、验证
@@ -284,7 +288,8 @@ if __name__ == '__main__':
                         help='number of gpus per node')
     parser.add_argument('-nr', '--nr', default=0, type=int,
                         help='ranking within the nodes')
+    parser.add_argument('-db', '--debug', action='store_true')
     args = parser.parse_args()
     args.world_size = args.gpus * args.nodes
-    mp.spawn(main, nprocs=args.gpus, args=(args,))
+    mp.spawn(main, args=(args,), nprocs=args.gpus)
     #wandb.agent(sweep_id, function=main, count=4)
