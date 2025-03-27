@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --job-name="pytorch_distributeddataparallel"
+#SBATCH --output="pytorch_distributeddataparallel_%j.out"
+#SBATCH --partition=gpu
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --cores-per-socket=2
+#SBATCH --threads-per-core=4
+#SBATCH --sockets-per-node=2
+#SBATCH --mem-per-cpu=1200
+#SBATCH --export=ALL
+#SBATCH --gres=gpu:v100:2
+#SBATCH --time=1:00:00
+##SBATCH --reservation=root_19
+
+export MASTER_PORT=12376
+export WORLD_SIZE=2
+
+echo "NODELIST="${SLURM_NODELIST}
+master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+export MASTER_ADDR=$master_addr
+echo "MASTER_ADDR="$MASTER_ADDR
+
+module load opence
+
+python train_hal.py
