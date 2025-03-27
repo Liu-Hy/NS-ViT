@@ -3,6 +3,7 @@
 import torch
 
 from utils import encoder_forward
+import time
 
 
 def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
@@ -10,8 +11,8 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
     model = model.to(device)
     model.eval()
 
-    for param in model.parameters():
-        param.requires_grad = False
+    #for param in model.parameters():
+        #param.requires_grad = False
 
     model = model.to(device)
     patch_embed = model.patch_embed
@@ -42,6 +43,7 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
 
     print('Starting magnitude', delta_x.shape, (((delta_x.squeeze(0)) ** 2).sum(dim=0) ** 0.5).mean())
 
+    start_time = time.time()
     for i in range(rounds):
         for _, (imgs, _) in enumerate(loader):
             delta_x.requires_grad = True
@@ -68,6 +70,8 @@ def encoder_level_noise(model, loader, rounds, eps, milestones, lim, device):
 
         if not i % 20:
             print(i, error_mult.item())
+            if i == 200:
+                print("--- %s seconds for 100 rounds ---" % (time.time() - start_time))
         if i in milestones:
             eps /= 10.0
 
