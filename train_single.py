@@ -159,7 +159,7 @@ def main():
     adv = True
     img_ratio = 0.1
     train_ratio = 1
-    val_ratio = 1
+    val_ratio = 0.1
     task = "imagenet"  # "imagenette"
     save_path = Path("./output").joinpath(task)
     data_path = Path("/var/lib/data")
@@ -229,7 +229,7 @@ def main():
 
     criterion = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
-    scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs)
+    scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs) # Watch out! What is len(data_loader) now?
 
     best_rbn = 0.
 
