@@ -103,6 +103,16 @@ def get_model_and_config(model_name, pretrained=True):
     print(f'{model_name}, {img_size}x{img_size}, patch_size:{patch_size}')
     return model, patch_size, img_size, config
 
+def validate_noise(data_path, model, class_ranges, criterion, transform, batch_size, delta_x, val_ratio, device):
+    model.eval()
+    # for type_path in sorted(data_path.iterdir()):
+    clean_path = data_path.joinpath("imagenet")
+    if delta_x is not None:
+        print("---- Validate noise effect (1st row learned noise, 2nd row permuted)")
+        corr_res = validate_encoder_noise(model, clean_path, transform, batch_size, delta_x, val_ratio, device)
+        idx = torch.randperm(delta_x.nelement())
+        t = delta_x.reshape(-1)[idx].reshape(delta_x.size())
+        incorr_res = validate_encoder_noise(model, clean_path, transform, batch_size, t, val_ratio, device)
 
 def encoder_forward(model, x):
     # Concat CLS token to the patch embeddings,

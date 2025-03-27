@@ -1,6 +1,7 @@
 from typing import Callable, Optional
 from utils import SPLITS
 import pickle
+import torch
 from pathlib import Path
 from ffrecord import FileReader
 from hfai.datasets.base import (
@@ -8,7 +9,7 @@ from hfai.datasets.base import (
     get_data_dir,
     register_dataset
 )
-
+from ffrecord.torch import Dataset, DataLoader
 
 """
 Expected file organization:
@@ -25,7 +26,6 @@ Expected file organization:
             PART_00001.ffr
             ...
 """
-
 
 @register_dataset
 class ImageNetDG(BaseDataset):
@@ -74,7 +74,7 @@ class ImageNetDG(BaseDataset):
         assert split in SPLITS
         self.split = split
         self.transform = transform
-        data_dir = Path("/private_dataset/ImageNet_DG/")
+        self.data_dir = Path("/private_dataset/ImageNet_DG/")
         self.fname = self.data_dir / f"{split}" / "ffrdata"
         self.reader = FileReader(self.fname, check_data)
 
@@ -101,3 +101,4 @@ class ImageNetDG(BaseDataset):
             transformed_samples.append((img, label))
 
         return transformed_samples
+
