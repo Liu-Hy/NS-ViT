@@ -66,7 +66,7 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
             model.try_save(epoch, step + 1, others=(best_acc, delta_x), force=True)
 
 
-def validate(dataloader, model, criterion, val_ratio, adv=False):
+def validate(dataloader, model, criterion, val_ratio, adv=False, mask=None):
     loss, correct1, correct5, total = torch.zeros(4).cuda()
     model.eval()
     if adv:

@@ -1,4 +1,4 @@
-"""Script to run on the HFAI server"""
+"""Evaluation script to run on the HFAI server"""
 import haienv
 haienv.set_env('ns')
 
@@ -19,12 +19,28 @@ import argparse
 from utils import *
 from tqdm import tqdm
 from train_hfai import validate, validate_corruption, prepare_loader
+import models
 
 import hfai
 import hfai.distributed as dist
 from ffrecord.torch import DataLoader
 from ffrecord.torch.dataset import Subset
 dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
+
+def get_val_transform(config, split):
+    normalize = transforms.Normalize(config['mean'], config['std'])
+
+    if split in ["corruption", "stylized"]:
+        val_transform = transforms.Compose([
+            transforms.ToTensor(),
+            normalize])
+    else:
+        val_transform = transforms.Compose([
+            transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            normalize])
+    return val_transform
 
 def main(local_rank, args):
     val_batch_size = 32
@@ -48,57 +64,47 @@ def main(local_rank, args):
                             rank=rank * gpus + local_rank)
     torch.cuda.set_device(local_rank)
 
-    #model_nms = os.listdir("./pretrained")
-    #model_nms = ['vit_base_patch16_224', 'vit_base_patch32_224',
-     #'vit_base_patch16_224-drvit', 'vit_base_patch16_224-dat', 'vit_base_patch16_224-rvt-s']
-    model_nms = ['vit_base_patch16_224-dat', 'vit_base_patch16_224', 'vit_base_patch32_224']
-    for model_name in model_nms:
-        if "drvit" in model_name or "rvt" in model_name:
-            break
-        print(f"=== Evaluating model {model_name} ===")
-        #model_name = 'vit_base_patch16_224-dat'
-        #ckpt_path = "base_ps16_epochs10_lr0.0001_bs16_adv_True_nlr0.1_rounds3_lim3_eps0.01_imgr0.1_trainr1.0_valr1.0/model/7"
-        model, patch_size, img_size, model_config = get_model_and_config(model_name, pretrained=(args.ckpt_path=="none"), offline=True)
-        if args.ckpt_path != "none":
-            checkpoint = torch.load(save_path.joinpath(args.ckpt_path))
-            model.load_state_dict(checkpoint["model_state_dict"])
-        model.cuda()
-        # model = hfai.nn.to_hfai(model)
-        model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
+    model_name = 'vit_base_patch16_224'
+    ckpt_path = 'pretrained/vit_base_patch16_224-dat.pth.tar'
 
-        if "-" in model_name:
-            normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        else:
-            normalize = transforms.Normalize(model_config['mean'], model_config['std'])
+    print(f"=== Evaluating model {model_name} ===")
+    model, patch_size, img_size, model_config = get_model_and_config(model_name, ckpt_path, use_ema=True)
+    model.cuda()
+    # model = hfai.nn.to_hfai(model)
+    model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
 
-        val_transform = transforms.Compose([
-            transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            normalize])
+    normalize = transforms.Normalize(model_config['mean'], model_config['std'])
 
-        criterion = nn.CrossEntropyLoss()
+    val_transform = transforms.Compose([
+        transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        normalize])
 
-        result = dict()
-        # Evaluate on val and OOD datasets except imagenet-c
-        for split in SPLITS:
-            if split != "train" and not split.startswith("c-"):
-                if split == "val":
-                    dts = hfai.datasets.ImageNet('val', transform=val_transform)
-                    val_loader = prepare_loader(dts, val_batch_size)
-                else:
-                    val_loader = prepare_loader(split, val_batch_size, val_transform)
-                acc, _ = validate(val_loader, model, criterion, val_ratio)
-                result[split] = acc
-                if split == "val":
-                    result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
-        # Evaluate on imagenet-c
-        corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, 1.)
-        result["corruption"] = corruption_rs["mce"]
-        if rank == 0 and local_rank == 0:
-            print(result)
-            total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
-            print(f"Avg performance: {total}\n", result)
+    criterion = nn.CrossEntropyLoss()
+
+    result = dict()
+    # Evaluate on val and OOD datasets except imagenet-c
+    for split in SPLITS:
+        if split != "train" and not split.startswith("c-"):
+            val_transform = get_val_transform(model_config, split)
+            if split == "val":
+                dts = hfai.datasets.ImageNet('val', transform=val_transform)
+                val_loader = prepare_loader(dts, val_batch_size)
+            else:
+                val_loader = prepare_loader(split, val_batch_size, val_transform)
+            acc, _ = validate(val_loader, model, criterion, val_ratio)
+            result[split] = acc
+            if split == "val":
+                result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
+    # Evaluate on imagenet-c
+    c_transform = get_val_transform(model_config, "corruption")
+    corruption_rs = validate_corruption(model, c_transform, criterion, val_batch_size, 1.)
+    result["corruption"] = corruption_rs["mce"]
+    if rank == 0 and local_rank == 0:
+        print(result)
+        total = get_mean([100 - v if k == "corruption" else v for k, v in result.items()])
+        print(f"Avg performance: {total}\n", result)
 
 
 if __name__ == '__main__':
