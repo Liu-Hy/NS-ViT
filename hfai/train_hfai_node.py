@@ -117,7 +117,7 @@ def main():
     img_ratio = 0.1
     train_ratio = 1.
     val_ratio = 1.
-    save_path = Path("output/hfai")
+    save_path = Path("../output/hfai")
     data_path = Path("/var/lib/data")
     save_path.mkdir(exist_ok=True, parents=True)
 

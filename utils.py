@@ -1,6 +1,7 @@
 import argparse
 import os
-
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import timm
 import torch
 from torch import nn
@@ -95,7 +96,7 @@ def init_dataset(args, model_config):
 def get_mean(l):
     return sum(l) / len(l)
 
-def get_model_and_config(model_name, pretrained=True, model_dir="pretrained", offline=False):
+def get_model_and_config(model_name, pretrained=True, model_dir="../pretrained", offline=False):
     """Get a model with random or pretrained weights, and some hyperparameters.
     When pretrained is True, it first tries to find a checkpoint file from model_dir. If not found, downloads it online.
     Example models:
@@ -113,10 +114,10 @@ def get_model_and_config(model_name, pretrained=True, model_dir="pretrained", of
     elif model_name in models:
         file_name = file_names[models.index(model_name)]
         if file_name.endswith(".npz"):
-            model = timm.create_model(model_type, checkpoint_path=os.path.join("pretrained", model_name + ".npz"))
+            model = timm.create_model(model_type, checkpoint_path=os.path.join(model_dir, model_name + ".npz"))
         elif file_name.endswith(".pth.tar"):
             model = timm.create_model(model_type, pretrained=False)
-            ckpt = torch.load(os.path.join("pretrained", model_name + ".pth.tar"))
+            ckpt = torch.load(os.path.join(model_dir, model_name + ".pth.tar"))
             if 'state_dict' in ckpt.keys():
                 state_dict = ckpt['state_dict']
             else:
@@ -183,7 +184,7 @@ def encoder_forward(model, x):
     return mdl.pre_logits(x[:, 0])  # What is pre_logits?
 
 
-def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, img_ratio):
+def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, img_ratio, disable=False):
     print(f"img size {img_size}")
     model.eval()
     model.zero_grad()
@@ -212,7 +213,7 @@ def encoder_level_epsilon_noise(model, loader, img_size, rounds, nlr, lim, eps, 
     scheduler = CosineAnnealingLR(optimizer, len(loader) * rounds)
 
     for i in range(rounds):
-        iterator = tqdm(loader, position=0, leave=True)
+        iterator = tqdm(loader, position=0, disable=disable)
         for st, (imgs, lab) in enumerate(iterator):
             assert delta_x.requires_grad == True
             if st > int(img_ratio * len(loader)) - 1:

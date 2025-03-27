@@ -3,6 +3,8 @@ import haienv
 haienv.set_env('ns')
 
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 import torch
 from torch import nn
@@ -47,8 +49,9 @@ def main(local_rank, args):
     torch.cuda.set_device(local_rank)
 
     #model_nms = os.listdir("./pretrained")
-    model_nms = ['vit_base_patch16_224', 'vit_base_patch32_224',
-     'vit_base_patch16_224-drvit', 'vit_base_patch16_224-dat', 'vit_base_patch16_224-rvt-s']
+    #model_nms = ['vit_base_patch16_224', 'vit_base_patch32_224',
+     #'vit_base_patch16_224-drvit', 'vit_base_patch16_224-dat', 'vit_base_patch16_224-rvt-s']
+    model_nms = ['vit_base_patch16_224-dat', 'vit_base_patch16_224', 'vit_base_patch32_224']
     for model_name in model_nms:
         if "drvit" in model_name or "rvt" in model_name:
             break
@@ -63,11 +66,19 @@ def main(local_rank, args):
         # model = hfai.nn.to_hfai(model)
         model = DistributedDataParallel(model.cuda(), device_ids=[local_rank])
 
-        val_transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(model_config['mean'], model_config['std'])])
+        if "-" in model_name:
+            val_transform = transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+                #transforms.Normalize(model_config['mean'], model_config['std'])])
+        else:
+            val_transform = transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(model_config['mean'], model_config['std'])])
 
         criterion = nn.CrossEntropyLoss()
 
@@ -86,7 +97,7 @@ def main(local_rank, args):
                 if split == "val":
                     result["fgsm"] = validate(val_loader, model, criterion, val_ratio, adv=True)[0]
         # Evaluate on imagenet-c
-        corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, 0.1)
+        corruption_rs = validate_corruption(model, val_transform, criterion, val_batch_size, 1.)
         result["corruption"] = corruption_rs["mce"]
         if rank == 0 and local_rank == 0:
             print(result)

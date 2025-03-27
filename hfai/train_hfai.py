@@ -3,6 +3,8 @@ import haienv
 haienv.set_env('ns')
 
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 import torch
 from torch import nn
@@ -26,9 +28,11 @@ dist.set_nccl_opt_level(dist.HFAI_NCCL_OPT_LEVEL.AUTO)
 
 #hfai.nn.functional.set_replace_torch()
 
-def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc):
+def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc, disable):
     model.train()
-    for step, batch in enumerate(dataloader):
+    iterator = tqdm(dataloader, position=0, disable=disable)
+    epoch_loss = 0.
+    for step, batch in enumerate(iterator):
         step += start_step
         if step > int(train_ratio * len(dataloader)):
             break
@@ -43,19 +47,21 @@ def adv_train(dataloader, model, criterion, optimizer, scheduler, adv, delta_x, 
             adv_outputs = model.module.head(encoder_forward(model, x))
             adv_loss = criterion(adv_outputs, labels)
             # adv_loss.backward()
-            consistency = ((adv_outputs - outputs) ** 2).sum(dim=-1).mean()
+            # consistency = ((adv_outputs - outputs) ** 2).sum(dim=-1).mean()
             loss = loss + adv_loss  # + consistency
         loss.backward()
         optimizer.step()
         scheduler.step()
-        if local_rank == 0 and step % 20 == 0:
+        """if local_rank == 0 and step % 20 == 0:
             if adv:
                 print(
                     f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}, Consistency_ratio: {round((consistency / (loss + adv_loss)).item(), 4)}',
                     flush=True)
             else:
                 print(
-                    f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}', flush=True)
+                    f'Epoch: {epoch}, Step {step}, Loss: {round(loss.item(), 4)}', flush=True)"""
+        epoch_loss += loss.item()
+        iterator.set_postfix({"loss": round((epoch_loss / (step + 1)), 3)})
         if step % 100 == 0:
             model.try_save(epoch, step + 1, others=(best_acc, delta_x), force=True)
 
@@ -135,7 +141,7 @@ def main(local_rank, args):
     img_ratio = 0.1
     train_ratio = 1.
     val_ratio = 1.
-    save_path = Path("output/hfai")
+    save_path = Path("../output/hfai")
     data_path = Path("/var/lib/data")
     #save_path.mkdir(exist_ok=True, parents=True)
 
@@ -159,6 +165,7 @@ def main(local_rank, args):
 
     if rank == 0 and local_rank == 0:
         print(args)
+    disable = (local_rank != 0)
 
     # 模型、数据、优化器
     model_name = 'vit_base_patch16_224-dat'
@@ -215,7 +222,7 @@ def main(local_rank, args):
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = CosineAnnealingLR(optimizer, len(train_loader) * epochs)
 
-    ckpt_path = save_path.joinpath('latest.pt')
+    ckpt_path = save_path.joinpath(setting + '_' + 'latest.pt')
     try:
         start_epoch, start_step, others = hfai.checkpoint.init(model, optimizer, scheduler=scheduler, ckpt_path=ckpt_path)
     except RuntimeError:
@@ -232,14 +239,17 @@ def main(local_rank, args):
         if adv:
             if delta_x is None:
                 print("---- Learning noise")
-                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio)
+                delta_x = encoder_level_epsilon_noise(model, img_loader, img_size, rounds, nlr, lim, eps, img_ratio, disable)
+                torch.save({"delta_x": delta_x}, noise_path.joinpath(str(epoch)))
             print(f"Noise norm: {round(torch.norm(delta_x).item(), 4)}")
 
-        print("---- Training model")
-        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc)
+        if local_rank == 0:
+            print("---- Training model")
+        adv_train(train_loader, model, criterion, optimizer, scheduler, adv, delta_x, train_ratio, epoch, local_rank, start_step, best_acc, disable)
         start_step = 0
         delta_x = None
-        print("---- Validating model")
+        if local_rank == 0:
+            print("---- Validating model")
         result = dict()
         # Evaluate on held-out set
         dev_acc, _ = validate(dev_loader, model, criterion, val_ratio)
