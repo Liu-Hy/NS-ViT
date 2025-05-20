@@ -1,10 +1,2 @@
-wandb/
-outputs/
-.git
+.DS_store
 .idea
-.idea/
-.idea/*
-data/
-artifacts/
-.env
-/old_outputs/
