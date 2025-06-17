@@ -2,483 +2,399 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="description"
-        content="Deformable Neural Radiance Fields creates free-viewpoint portraits (nerfies) from casually captured videos.">
-  <meta name="keywords" content="Nerfies, D-NeRF, NeRF">
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description" content="Official website for CPAL 2025 (Oral) paper: Approximate Nullspace Augmented Finetuning for Robust Vision Transformer">
+  <meta property="og:title" content="Approximate Nullspace Augmented Finetuning for Robust Vision Transformer"/>
+  <meta property="og:description" content="Official website for CPAL 2025 (Oral) paper: Approximate Nullspace Augmented Finetuning for Robust Vision Transformer"/>
+  <meta property="og:url" content="https://siquanhuang.github.io/Multi-metrics/"/>
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+  <meta property="og:image" content="static/images/overview.png" />
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+
+
+  <meta name="twitter:title" content="Approximate Nullspace Augmented Finetuning for Robust Vision Transformer">
+  <meta name="twitter:description" content="Official website for CPAL 2025 (Oral) paper: Approximate Nullspace Augmented Finetuning for Robust Vision Transformer">
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <meta name="twitter:image" content="static/images/overview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Keywords for your paper to be indexed by-->
+  <meta name="keywords" content="Federated learning, Backdoor attack, Distance-based defense, Multi-metrics">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nerfies: Deformable Neural Radiance Fields</title>
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <!-- MathJax Configuration -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-PYVRSFMDRL');
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    };
   </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
+  <title>Approximate Nullspace Augmented Finetuning for Robust Vision Transformer</title>
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
-        rel="stylesheet">
+  rel="stylesheet">
 
-  <link rel="stylesheet" href="./static/css/bulma.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
-  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
   <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-  <link rel="stylesheet" href="./static/css/index.css">
-  <link rel="icon" href="./static/images/favicon.svg">
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script defer src="./static/js/fontawesome.all.min.js"></script>
-  <script src="./static/js/bulma-carousel.min.js"></script>
-  <script src="./static/js/bulma-slider.min.js"></script>
-  <script src="./static/js/index.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
 </head>
 <body>
 
-<nav class="navbar" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </a>
-  </div>
-  <div class="navbar-menu">
-    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
-      <a class="navbar-item" href="https://keunhong.com">
-      <span class="icon">
-          <i class="fas fa-home"></i>
-      </span>
-      </a>
 
-      <div class="navbar-item has-dropdown is-hoverable">
-        <a class="navbar-link">
-          More Research
-        </a>
-        <div class="navbar-dropdown">
-          <a class="navbar-item" href="https://hypernerf.github.io">
-            HyperNeRF
-          </a>
-          <a class="navbar-item" href="https://nerfies.github.io">
-            Nerfies
-          </a>
-          <a class="navbar-item" href="https://latentfusion.github.io">
-            LatentFusion
-          </a>
-          <a class="navbar-item" href="https://photoshape.github.io">
-            PhotoShape
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</nav>
-
-
-<section class="hero">
-  <div class="hero-body">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title">Nerfies: Deformable Neural Radiance Fields</h1>
-          <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              <a href="https://keunhong.com">Keunhong Park</a><sup>1</sup>,</span>
-            <span class="author-block">
-              <a href="https://utkarshsinha.com">Utkarsh Sinha</a><sup>2</sup>,</span>
-            <span class="author-block">
-              <a href="https://jonbarron.info">Jonathan T. Barron</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="http://sofienbouaziz.com">Sofien Bouaziz</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="https://www.danbgoldman.com">Dan B Goldman</a><sup>2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="https://homes.cs.washington.edu/~seitz/">Steven M. Seitz</a><sup>1,2</sup>,
-            </span>
-            <span class="author-block">
-              <a href="http://www.ricardomartinbrualla.com">Ricardo Martin-Brualla</a><sup>2</sup>
-            </span>
-          </div>
-
-          <div class="is-size-5 publication-authors">
-            <span class="author-block"><sup>1</sup>University of Washington,</span>
-            <span class="author-block"><sup>2</sup>Google Research</span>
-          </div>
-
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
           <div class="column has-text-centered">
-            <div class="publication-links">
-              <!-- PDF Link. -->
-              <span class="link-block">
-                <a href="https://arxiv.org/pdf/2011.12948"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fas fa-file-pdf"></i>
+            <h1 class="title is-1 publication-title">Approximate Nullspace Augmented Finetuning for Robust Vision Transformer</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                <a href="FIRST AUTHOR PERSONAL LINK" target="_blank">Haoyang Liu</a><sup>1</sup>,</span>
+                <span class="author-block">
+                  <a href="https://williamium3000.github.io/" target="_blank">Aditya Singh</a><sup>2</sup>,</span>
+                <span class="author-block">
+                  <a href="https://williamium3000.github.io/" target="_blank">Yijiang Li</a><sup>3</sup>,</span>
+                  <span class="author-block">
+                    <a href="THIRD AUTHOR PERSONAL LINK" target="_blank">Haohan Wan</a></a><sup>1</sup>,</span>
                   </span>
-                  <span>Paper</span>
-                </a>
-              </span>
-              <span class="link-block">
-                <a href="https://arxiv.org/abs/2011.12948"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="ai ai-arxiv"></i>
-                  </span>
-                  <span>arXiv</span>
-                </a>
-              </span>
-              <!-- Video Link. -->
-              <span class="link-block">
-                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-youtube"></i>
-                  </span>
-                  <span>Video</span>
-                </a>
-              </span>
-              <!-- Code Link. -->
-              <span class="link-block">
-                <a href="https://github.com/google/nerfies"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-github"></i>
-                  </span>
-                  <span>Code</span>
-                  </a>
-              </span>
-              <!-- Dataset Link. -->
-              <span class="link-block">
-                <a href="https://github.com/google/nerfies/releases/tag/0.1"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="far fa-images"></i>
-                  </span>
-                  <span>Data</span>
-                  </a>
-            </div>
 
+                  <div class="is-size-5 publication-authors">
+                    <span class="author-block"><sup>1</sup>University of Illinois Urbana-Champaign, <sup2</sup>Sorted Technologies, <sup>3</sup>UC San Diego<br>
+                      <div class="column has-text-centered">
+                        <!-- <span class="link-block">
+                          <a href="https://iccv2023.thecvf.com/" target="_blank"
+                             class="external-link button is-normal is-rounded"
+                             style="background: linear-gradient(90deg, #185a9d 0%, #43cea2 100%); color: #fff; font-weight: 800; box-shadow: 0 8px 32px rgba(24,90,157,0.18); border: none; transition: all 0.25s cubic-bezier(.25,.8,.25,1); transform: translateY(-3px) scale(1.05); padding: 2.2em 2.6em; letter-spacing: 1.2px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 2.5em;">
+                            <span class="icon" style="margin-right: 10px;">
+                              <i class="fas fa-trophy" style="color: #ffe066; font-size: 1.5em; text-shadow: 0 0 16px rgba(255,224,102,0.8), 0 0 4px #fff;"></i>
+                            </span>
+                            <span style="display:inline-block; vertical-align:middle;">
+                              <span style="display:block; text-transform: uppercase; font-size: 1.08em; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 10px rgba(24,90,157,0.18), 0 0 2px #43cea2;">
+                                Accepted by
+                              </span>
+                              <span style="display:block; font-size:1.1em; font-weight:700; margin-top:0.15em; letter-spacing:1.5px; color:#ffe066; text-shadow: 0 2px 10px rgba(24,90,157,0.18), 0 0 2px #43cea2;">
+                                CPAL 2025 (Oral)
+                              </span>
+                            </span>
+                          </a>
+                        </span> -->
+
+                  <div class="column has-text-centered">
+                    <div class="publication-links">
+                         <!-- Arxiv PDF link -->
+                      <span class="link-block">
+                        <a href="https://arxiv.org/abs/2403.10476" target="_blank"
+                        class="external-link button is-normal is-rounded is-dark">
+                        <span class="icon">
+                          <i class="fas fa-file-pdf"></i>
+                        </span>
+                        <span>Paper</span>
+                      </a>
+                    </span>
+
+                    <!-- Supplementary PDF link -->
+                    <!-- <span class="link-block">
+                      <a href="https://openaccess.thecvf.com/content/ICCV2023/supplemental/Huang_Multi-Metrics_Adaptively_Identifies_ICCV_2023_supplemental.pdf" target="_blank"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                        <i class="fas fa-file-pdf"></i>
+                      </span>
+                      <span>Supplementary</span>
+                    </a>
+                  </span> -->
+
+                  <!-- Github link -->
+                  <span class="link-block">
+                    <a href="https://github.com/Liu-Hy/NS-ViT" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <!-- ArXiv abstract Link -->
+                <!-- <span class="link-block">
+                  <a href="static/pdfs/poster.pdf" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                  </span>
+                  <span>Poster</span>
+                </a>
+              </span> -->
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
 
 <section class="hero teaser">
   <div class="container is-max-desktop">
     <div class="hero-body">
-      <video id="teaser" autoplay muted loop playsinline height="100%">
-        <source src="./static/videos/teaser.mp4"
-                type="video/mp4">
-      </video>
-      <h2 class="subtitle has-text-centered">
-        <span class="dnerf">Nerfies</span> turns selfie videos from your phone into
-        free-viewpoint
-        portraits.
-      </h2>
-    </div>
-  </div>
-</section>
-
-
-<section class="hero is-light is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-steve">
-          <video poster="" id="steve" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/steve.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-chair-tp">
-          <video poster="" id="chair-tp" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/chair-tp.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-shiba">
-          <video poster="" id="shiba" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/shiba.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-fullbody">
-          <video poster="" id="fullbody" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/fullbody.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-blueshirt">
-          <video poster="" id="blueshirt" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/blueshirt.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-mask">
-          <video poster="" id="mask" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/mask.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-coffee">
-          <video poster="" id="coffee" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/coffee.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-toby">
-          <video poster="" id="toby" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/toby2.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
+      <div class="has-text-centered" style="margin-bottom: 2rem;">
+        <img src="static/images/example.png" alt="Overview of WMDD method" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"/>
+        <p class="is-size-6" style="margin-top: 0.75rem; color: #555;">
+          An example of nullspace noise. (a) sample input image; (b) noise generated by
+the basis vectors of the nullspace; (c) noisy image as a result of adding the nullspace noise to the input.
+        </p>
       </div>
     </div>
   </div>
 </section>
 
-
-<section class="section">
+<!-- Paper abstract -->
+<section class="section hero is-light">
   <div class="container is-max-desktop">
-    <!-- Abstract. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            We present the first method capable of photorealistically reconstructing a non-rigidly
-            deforming scene using photos/videos captured casually from mobile phones.
-          </p>
-          <p>
-            Our approach augments neural radiance fields
-            (NeRF) by optimizing an
-            additional continuous volumetric deformation field that warps each observed point into a
-            canonical 5D NeRF.
-            We observe that these NeRF-like deformation fields are prone to local minima, and
-            propose a coarse-to-fine optimization method for coordinate-based models that allows for
-            more robust optimization.
-            By adapting principles from geometry processing and physical simulation to NeRF-like
-            models, we propose an elastic regularization of the deformation field that further
-            improves robustness.
-          </p>
-          <p>
-            We show that <span class="dnerf">Nerfies</span> can turn casually captured selfie
-            photos/videos into deformable NeRF
-            models that allow for photorealistic renderings of the subject from arbitrary
-            viewpoints, which we dub <i>"nerfies"</i>. We evaluate our method by collecting data
-            using a
-            rig with two mobile phones that take time-synchronized photos, yielding train/validation
-            images of the same pose at different viewpoints. We show that our method faithfully
-            reconstructs non-rigidly deforming scenes and reproduces unseen views with high
-            fidelity.
-          </p>
+            Enhancing the robustness of deep learning models, particularly in the realm of vision transformers (ViTs), is crucial for their real-world deployment. In this work, we provide a finetuning approach to enhance the robustness of vision transformers inspired by the concept of nullspace from linear algebra. Our investigation centers on whether a vision transformer can exhibit resilience to input variations akin to the nullspace property in linear mappings, which would imply that perturbations sampled from this nullspace do not influence the model's output when added to the input. We start from the observation that many existing ViTs satisfy this property because their patch embedding layer has a non-trivial nullspace. Then, we extend the notion of nullspace to nonlinear settings and demonstrate that it is possible to synthesize approximate nullspace elements for ViT's encoder blocks through optimization. Finally, we propose a finetuning strategy for ViTs wherein we augment the training data with synthesized approximate nullspace noise. We find that our finetuning approach significantly improves the models' robustness to both adversarial and natural image perturbations.</p>
         </div>
       </div>
     </div>
-    <!--/ Abstract. -->
-
-    <!-- Paper video. -->
-    <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">Video</h2>
-        <div class="publication-video">
-          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
-                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div>
-    <!--/ Paper video. -->
   </div>
 </section>
+<!-- End paper abstract -->
 
-
-<section class="section">
+<section class="section hero is-small">
   <div class="container is-max-desktop">
-
     <div class="columns is-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Nullspace in Vision Transformer</h2>
+        <p>We first identifies that most off-the-shelf pre-trained ViT models exhibit a nontrivial nullspace due to the linear patch embedding layer. Since this layer is the first block of a ViT, any invariance to
+          it implies invariance to the entire model. Consequently, a nontrivial nullspace also exists for ViTs.</p>
+        <br>
+        <div class="content has-text-justified">
+          <figure style="text-align: center;">
+            <img src="static/images/nullspace.png" alt="Nullspace in Vision Transformer" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"/>
+            <figcaption style="font-size: 0.95em; margin-top: 0.5em;">
+              An illustration of the nullspace in three cases (left top: projection function; left bottom: linear function; right: vision transformer)
+            </figcaption>
+          </figure>
+          <p> 
+            The patch embedding layer of a Vision Transformer (ViT) defines a linear map $f_\theta$, whose <strong>nullspace</strong> $\mathcal{N}_\theta = \{\mathbf{v} : f_\theta(\mathbf{x} + \mathbf{v}) = f_\theta(\mathbf{x})\} $ is non-trivial when $cr^2 > d$. Any perturbation in this nullspace leaves the model’s output invariant.
+            For the self-attention encoder $f_\phi$, we generalize this idea and define the <strong>generalized nullspace</strong> as
+            $$
+            \tilde{\mathcal{N}}_\phi = \{\mathbf{v} \mid f_\phi(\mathbf{u} + \mathbf{v}) = f_\phi(\mathbf{u}),\ \forall \mathbf{u} \in \mathcal{U}\},
+            $$
+            enabling us to synthesize input noise that does not affect predictions. Approximate solutions are found by minimizing:
+            $$
+            \mathcal{L}_\phi(\tilde{\mathbf{v}}) = \mathbb{E}_{\mathbf{u} \in \mathcal{D}} \lVert f_\psi(f_\phi^{0}(\mathbf{u}+\tilde{\mathbf{v}})) - f_\psi(f_\phi^{0}(\mathbf{u}))\rVert - \lambda \log(\lVert \tilde{\mathbf{v}} \rVert).
+            $$
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      <!-- Visual Effects. -->
-      <div class="column">
+<section class="section hero is-small">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Synthesizing (approximate) nullspace noise</h2>
+        <div class="content has-text-justified">
+          <p>
+            To probe the existence of generalized nullspace elements $\tilde{\mathbf{v}}_\phi$ in transformers, we numerically optimize for additive perturbations that minimally affect the model’s output. This is achieved by minimizing the following loss function:
+          </p>
+          <div style="text-align: center;">
+            $$
+            \mathcal{L}_\phi(\tilde{\mathbf{v}}) = \mathbb{E}_{\mathbf{u} \in \mathcal{D}} \lVert f_\psi(f_\phi^{0}(\mathbf{u}+\tilde{\mathbf{v}})) - f_\psi(f_\phi^{0}(\mathbf{u}))\rVert - \lambda \log(\lVert \tilde{\mathbf{v}} \rVert).
+            $$
+          </div>
+          <p>
+            By varying the regularization strength $\lambda$, we obtain perturbations that are nearly invisible to the classifier, revealing benign directions in input space. Experiments confirm that the learned vectors are stable and exhibit approximate closure under scaling and convex combination.
+          </p>
+        <figure style="text-align: center; margin-top: 2em;">
+          <img src="static/images/generalized_nullspace.png" alt="Generalized Nullspace Illustration" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);" />
+          <figcaption style="font-size: 0.95em; margin-top: 0.5em;">
+            Generalized nullspace. (Left) Solid lines (---):s the model performance under the learned noise; dashed lines ($\cdot\cdot\cdot$): performance after random permutation of the elements of the learned noise vector. 
+            (Right) by changing the regularization strengths, we explore noise in the generalized nullspace at different magnitudes.
+          </figcaption>
+        </figure>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section hero is-small">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full">
         <div class="content">
-          <h2 class="title is-3">Visual Effects</h2>
+          <h2 class="title is-3">Nullspace Augmented Finetuning</h2>
           <p>
-            Using <i>nerfies</i> you can create fun visual effects. This Dolly zoom effect
-            would be impossible without nerfies since it would require going through a wall.
+            We introduce the <strong>$\epsilon$-approximate nullspace</strong> $\tilde{\mathcal{N}}_\phi(\epsilon)$, the set of perturbations that induce at most $\epsilon$ expected change in model output:
           </p>
-          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
-            <source src="./static/videos/dollyzoom-stacked.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-      </div>
-      <!--/ Visual Effects. -->
-
-      <!-- Matting. -->
-      <div class="column">
-        <h2 class="title is-3">Matting</h2>
-        <div class="columns is-centered">
-          <div class="column content">
-            <p>
-              As a byproduct of our method, we can also solve the matting problem by ignoring
-              samples that fall outside of a bounding box during rendering.
-            </p>
-            <video id="matting-video" controls playsinline height="100%">
-              <source src="./static/videos/matting.mp4"
-                      type="video/mp4">
-            </video>
+          <div style="text-align: center;">
+            $$
+            \tilde{\mathcal{N}}_\phi(\epsilon) = \left\{ \tilde{\mathbf{v}} \;\middle|\; \mathbb{E}_{\mathbf{u} \in \mathcal{D}} \lVert f(\mathbf{u} + \tilde{\mathbf{v}}) - f(\mathbf{u}) \rVert \leq \epsilon \right\}.
+            $$
           </div>
+          <p>
+            To enhance model robustness, we fine-tune the model using these nullspace noise vectors via a bi-level optimization:
+          </p>
+          <div style="text-align: center;">
+            $$
+            \min_{\phi} \;\mathbb{E}_{\mathbf{u} \in \mathcal{D}}\, \ell(f_\psi(f_\phi^{0}(\mathbf{u} + \tilde{\mathbf{v}}_\phi^*)), \mathbf{y}), \quad
+            \tilde{\mathbf{v}}_{\phi}^* = \arg\max_{\tilde{\mathbf{v}} \in \mathcal{N}_\phi(\epsilon)} \lVert \tilde{\mathbf{v}} \rVert.
+            $$
+          </div>
+          <p>
+            Here, noise is iteratively updated by gradient descent and early-stopped once within $\epsilon$-approximate nullspace, promoting invariance and robustness under distribution shifts.
+          </p>
 
+          <div style="display: flex; justify-content: center;">
+            <figure style="text-align: center;">
+              <img src="static/images/table1.png" alt="Performance Table" style="max-width: 100%; height: auto;"/>
+              <figcaption style="font-size: 0.95em; margin-top: 0.5em;">
+                Effect of our nullspace augmented finetuning (NS) method on different models evaluated on multiple benchmark datasets.
+              </figcaption>
+            </figure>
+          </div>
+          <br>
+          <p>Our nullspace finetuning method consistently improves the robustness of models under distribution shifts and adversarial attacks, yielding a large gain in average performance for the vanilla ViT-small and ViT-base model and slight outperforming DAT. This not only shows that our nullspace finetuning method is effective
+            but also validates our previous hypothesis about the connection between the tolerance to nullspace and
+            the robustness of transformer models.</p>
+
+          <p>We futher compare our method with fine-tuning using two PGD adversarial training methods,
+            Madry (Madry et al., 2018a) and TRADES (Zhang et al., 2019) on the ViT-S model.</p>
+
+          <div style="display: flex; justify-content: center;">
+            <figure style="text-align: center;">
+              <img src="static/images/table2.png" alt="Performance Table" style="max-width: 100%; height: auto;"/>
+              <figcaption style="font-size: 0.95em; margin-top: 0.5em;">
+                Comparison of our NS method with PGD-based adversarial robustness methods of Madry and TRADES.
+              </figcaption>
+            </figure>
+          </div>
+          <br>
+          <p>Despite their high performance on adversarial attacks, compared to our method, Madry and TRADES perform considerably lower in the natural OOD setting.
+          </p>
+          
         </div>
       </div>
     </div>
-    <!--/ Matting. -->
+  </div>
+</section>
 
-    <!-- Animation. -->
+<section class="section hero is-small is-light">
+  <div class="container is-max-desktop">
     <div class="columns is-centered">
-      <div class="column is-full-width">
-        <h2 class="title is-3">Animation</h2>
-
-        <!-- Interpolating. -->
-        <h3 class="title is-4">Interpolating states</h3>
-        <div class="content has-text-justified">
+      <div class="column is-full">
+        <div class="content">
+          <h2 class="title is-3">Enlarged Approximate Nullspace</h2>
           <p>
-            We can also animate the scene by interpolating the deformation latent codes of two input
-            frames. Use the slider here to linearly interpolate between the left frame and the right
-            frame.
+            The model allows for noises with larger and larger norms to be within $\epsilon$-approximate, which informally suggests an enlarging $\epsilon$-approximate nullspace.
           </p>
-        </div>
-        <div class="columns is-vcentered interpolation-panel">
-          <div class="column is-3 has-text-centered">
-            <img src="./static/images/interpolate_start.jpg"
-                 class="interpolation-image"
-                 alt="Interpolate start reference image."/>
-            <p>Start Frame</p>
+          <div style="display: flex; justify-content: center;">
+            <figure style="text-align: center;">
+              <img src="static/images/learned_noise.png" alt="Enlarged Approximate Nullspace" style="max-width: 60%; height: auto;"/>
+              <figcaption style="font-size: 0.95em; margin-top: 0.5em;">
+                L2 norm of the learned noise during training.
+              </figcaption>
+            </figure>
           </div>
-          <div class="column interpolation-video-column">
-            <div id="interpolation-image-wrapper">
-              Loading...
-            </div>
-            <input class="slider is-fullwidth is-large is-info"
-                   id="interpolation-slider"
-                   step="1" min="0" max="100" value="0" type="range">
-          </div>
-          <div class="column is-3 has-text-centered">
-            <img src="./static/images/interpolate_end.jpg"
-                 class="interpolation-image"
-                 alt="Interpolation end reference image."/>
-            <p class="is-bold">End Frame</p>
-          </div>
-        </div>
-        <br/>
-        <!--/ Interpolating. -->
-
-        <!-- Re-rendering. -->
-        <h3 class="title is-4">Re-rendering the input video</h3>
-        <div class="content has-text-justified">
-          <p>
-            Using <span class="dnerf">Nerfies</span>, you can re-render a video from a novel
-            viewpoint such as a stabilized camera by playing back the training deformations.
-          </p>
-        </div>
-        <div class="content has-text-centered">
-          <video id="replay-video"
-                 controls
-                 muted
-                 preload
-                 playsinline
-                 width="75%">
-            <source src="./static/videos/replay.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-        <!--/ Re-rendering. -->
-
-      </div>
-    </div>
-    <!--/ Animation. -->
-
-
-    <!-- Concurrent Work. -->
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <h2 class="title is-3">Related Links</h2>
-
-        <div class="content has-text-justified">
-          <p>
-            There's a lot of excellent work that was introduced around the same time as ours.
-          </p>
-          <p>
-            <a href="https://arxiv.org/abs/2104.09125">Progressive Encoding for Neural Optimization</a> introduces an idea similar to our windowed position encoding for coarse-to-fine optimization.
-          </p>
-          <p>
-            <a href="https://www.albertpumarola.com/research/D-NeRF/index.html">D-NeRF</a> and <a href="https://gvv.mpi-inf.mpg.de/projects/nonrigid_nerf/">NR-NeRF</a>
-            both use deformation fields to model non-rigid scenes.
-          </p>
-          <p>
-            Some works model videos with a NeRF by directly modulating the density, such as <a href="https://video-nerf.github.io/">Video-NeRF</a>, <a href="https://www.cs.cornell.edu/~zl548/NSFF/">NSFF</a>, and <a href="https://neural-3d-video.github.io/">DyNeRF</a>
-          </p>
-          <p>
-            There are probably many more by the time you are reading this. Check out <a href="https://dellaert.github.io/NeRF/">Frank Dellart's survey on recent NeRF papers</a>, and <a href="https://github.com/yenchenlin/awesome-NeRF">Yen-Chen Lin's curated list of NeRF papers</a>.
+          <br>
+          <p>Accompanied by the trend is the increase in robustness scores in both OOD and adversarial settings, which corroborates our findings.
           </p>
         </div>
       </div>
     </div>
-    <!--/ Concurrent Work. -->
-
   </div>
 </section>
 
 
-<section class="section" id="BibTeX">
-  <div class="container is-max-desktop content">
-    <h2 class="title">BibTeX</h2>
-    <pre><code>@article{park2021nerfies,
-  author    = {Park, Keunhong and Sinha, Utkarsh and Barron, Jonathan T. and Bouaziz, Sofien and Goldman, Dan B and Seitz, Steven M. and Martin-Brualla, Ricardo},
-  title     = {Nerfies: Deformable Neural Radiance Fields},
-  journal   = {ICCV},
-  year      = {2021},
-}</code></pre>
+<section class="section hero is-small">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full">
+        <div class="content">
+          <h2 class="title is-3">Ablation: Impact of $\epsilon$.</h2>
+        
+        <div style="display: flex; justify-content: center;">
+          <figure style="text-align: center;">
+            <img src="static/images/ablation.png" alt="Ablation: Impact of epsilon" style="max-width: 80%; height: auto;"/>
+          </figure>
+        </div>
+  
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
+<!-- Paper poster -->
+<!-- <section class="hero is-small is-light">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title has-text-centered">Poster</h2>
 
-<footer class="footer">
+      <iframe  src="static/pdfs/poster.pdf" width="100%" height="1000">
+          </iframe>
+        
+      </div>
+    </div>
+  </section> -->
+<!--End paper poster -->
+
+
+<!--BibTex citation -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title has-text-centered">Citation</h2>
+      <p>If you find our work useful in your research, please consider citing:</p>
+      <pre><code>@article{liu2024approximate,
+    title={Approximate Nullspace Augmented Finetuning for Robust Vision Transformers},
+    author={Liu, Haoyang and Singh, Aditya and Li, Yijiang and Wang, Haohan},
+    journal={arXiv preprint arXiv:2403.10476},
+    year={2024}
+}
+</code></pre>
+    </div>
+</section>
+<!--End BibTex citation -->
+
+
+  <footer class="footer">
   <div class="container">
-    <div class="content has-text-centered">
-      <a class="icon-link"
-         href="./static/videos/nerfies_paper.pdf">
-        <i class="fas fa-file-pdf"></i>
-      </a>
-      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
-        <i class="fab fa-github"></i>
-      </a>
-    </div>
     <div class="columns is-centered">
       <div class="column is-8">
         <div class="content">
           <p>
-            This website is licensed under a <a rel="license"
-                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+            You are free to borrow the source code of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
             Commons Attribution-ShareAlike 4.0 International License</a>.
-          </p>
-          <p>
-            This means you are free to borrow the <a
-              href="https://github.com/nerfies/nerfies.github.io">source code</a> of this website,
-            we just ask that you link back to this page in the footer.
-            Please remember to remove the analytics code included in the header of the website which
-            you do not want on your website.
           </p>
         </div>
       </div>
@@ -486,5 +402,11 @@
   </div>
 </footer>
 
-</body>
-</html>
+<!-- Statcounter tracking code -->
+  
+<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+    <!-- End of Statcounter Code -->
+
+  </body>
+  </html>
